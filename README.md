@@ -10,3 +10,8 @@ https://github.com/Tonejs/Tone.js
 ```
 npm run build
 ```
+
+
+preview:
+
+![](./docs/1.png)
