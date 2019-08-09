@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>midi-view</title>
+  <style>
+    #midi-view {
+      width: 80%;
+      min-height: 50px;
+      height: 300px;
+      background: gray;
+      margin: 0 auto;
+      margin-top: 10px;
+    }
+
+    button {
+      width: 80px;
+      height: 36px;
+    }
+
+    select {
+      min-width: 80px;
+      height: 36px;
+      margin-top: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="midi-view">
+    <canvas></canvas>
+  </div>
+  <select id="midi-select"> </select>
+  <button id="btn_paly">播放</button>
+  <script src="main.js"></script>
+  <script>
+    var selectItem = "Disney_Themes_-_Bippity_Boppity_Boo.mid"
+    var view = initView("#midi-view")
+    var playing = false;
+    function loadMidiFile(url) {
+      view.loadFromUrl(url);
+    }
+
+    function initBtn() {
+      var btn = document.querySelector("#btn_paly");
+      btn.addEventListener("click", () => {
+        if (playing) {
+          view.stop();
+          btn.textContent = "播放";
+        } else {
+          view.play();
+          btn.textContent = "暂停";
+        }
+        playing = !playing;
+      });
+    }
+
+    // 初始化列表
+    function initSelect() {
+      var files = [
+        "Disney_Themes_-_Bippity_Boppity_Boo.mid",
+        "Video_Game_Themes_-_Super_Mario_World.mid",
+        "zelda.mid",
+        "Disney_Themes_-_It's_A_Small_World.mid",
+        "chopin.mid",
+        "Lead(Matt Martin Remix).mid"
+      ];
+      var html = "";
+      files.forEach(v => {
+        html += `<option value="${v}"> ${v} </option>`;
+      });
+      var select = document.querySelector("#midi-select");
+      select.innerHTML = html;
+      select.addEventListener("change", () => {
+        selectItem = select.value;
+        loadMidiFile(`./midi/${selectItem}`);
+      });
+
+      selectItem = files[0];
+      loadMidiFile(`./midi/${selectItem}`);
+    }
+
+    initSelect()
+    initBtn()
+
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "midi-view",
+  "version": "1.0.0",
+  "description": "midi view",
+  "private": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode=development"
+  },
+  "keywords": [
+    "midi",
+    "view"
+  ],
+  "author": "yangzhi.ou",
+  "license": "TIM",
+  "devDependencies": {
+    "@types/lodash": "^4.14.136",
+    "path": "^0.12.7",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
+  },
+  "dependencies": {
+    "@tonejs/midi": "^2.0.7",
+    "@types/node": "^12.6.9",
+    "lodash": "^4.17.15",
+    "tone": "^13.4.9"
+  }
+}
