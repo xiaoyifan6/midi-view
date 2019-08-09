@@ -24,6 +24,10 @@ export namespace base {
             return Math.sqrt((this.x - p.x) * (this.x - p.x) + (this.y - p.y) * (this.y - p.y))
         }
 
+        public static distance(x1: number, y1: number, x2: number, y2: number) {
+            return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+        }
+
         public clone(): Point {
             return new Point(this.x, this.y);
         }
@@ -79,6 +83,26 @@ export namespace base {
         }
     }
 
+
+    export class Box {
+        private cmp: Component;
+
+        public constructor(cmp: Component) {
+            this.cmp = cmp;
+        }
+
+        public get sx(): number { return this.cmp.getScaleX(this.cmp); }
+        public get sy(): number { return this.cmp.getScaleX(this.cmp); }
+
+        public get psx(): number { return this.cmp.getScaleX(this.cmp.parent); }
+        public get psy(): number { return this.cmp.getScaleX(this.cmp.parent); }
+
+        public get left(): number { return ((this.cmp.parent ? this.cmp.parent.x : 0) + this.cmp.x) * this.psx; }
+        public get top(): number { return ((this.cmp.parent ? this.cmp.parent.y : 0) + this.cmp.y) * this.psy; }
+        public get width(): number { return this.cmp.width * this.sx; }
+        public get height(): number { return this.cmp.height * this.sy; }
+    }
+
     export class Component extends Rect {
         public children: Array<Component> = [];
         public bgColor: string = "#ffffff";
@@ -87,16 +111,23 @@ export namespace base {
         public parent?: Component;
         public overflow: boolean = false; // 是否允许溢出
         public active: boolean = false;
+        public visible: boolean = true;
+        public box: Box;
 
         public borderWith: number = 0;
         public borderColor: string = "#000000";
+
+        public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
+            super(x, y, width, height);
+            this.box = new Box(this);
+        }
 
         public release() {
             this.active = false;
         }
 
         public tryActive(p: Point) {
-            if (this.contain(p)) {
+            if (this.contain(p) && this.visible) {
                 this.active = true;
             }
         }
@@ -107,6 +138,13 @@ export namespace base {
             }
             this.children.splice(index, 0, child);
             child.parent = this;
+        }
+
+        public removeChild(child: Component) {
+            var index = this.children.indexOf(child);
+            if (index >= 0) {
+                this.removeChildAt(index);
+            }
         }
 
         public removeChildAt(index: number) {
@@ -124,11 +162,11 @@ export namespace base {
             }
         }
 
-        protected getScaleX(c: Component = this) {
+        public getScaleX(c: Component = this) {
             return c.scaleX * (c.parent ? c.parent.scaleX : 1);
         }
 
-        protected getScaleY(c: Component = this) {
+        public getScaleY(c: Component = this) {
             return c.scaleY * (c.parent ? c.parent.scaleY : 1);
         }
 
@@ -137,32 +175,24 @@ export namespace base {
         }
 
         public onDraw(context: CanvasRenderingContext2D) {
-            if (this.parent == null) return;
+            if (this.parent == null || !this.visible) return;
 
             context.fillStyle = this.bgColor;
 
-            var sx = this.getScaleX(this);
-            var sy = this.getScaleX(this);
-            var psx = this.getScaleX(this.parent);
-            var psy = this.getScaleX(this.parent);
-
-            var left = (this.parent.x + this.x) * psx;
-            var top = (this.parent.y + this.y) * psy;
-            var width = this.width * sx;
-            var height = this.height * sy;
+            var box = this.box;
 
             if (!this.overflow) {
                 context.beginPath();
-                var bound = this.getBound(left, top, width, height)
+                var bound = this.getBound(box.left, box.top, box.width, box.height)
                 context.rect(bound.left, bound.top, bound.right, bound.bottom);
                 context.clip();
             }
 
-            context.fillRect(left, top, width, height);
+            context.fillRect(box.left, box.top, box.width, box.height);
 
             for (var i = 0; i < this.children.length; i++) {
                 context.save();
-                this.children[i] && this.children[i].onDraw(context);
+                this.children[i] && this.children[i].visible && this.children[i].onDraw(context);
                 context.restore();
             }
 
@@ -170,10 +200,13 @@ export namespace base {
                 context.beginPath();
                 context.lineWidth = this.borderWith;
                 context.strokeStyle = this.borderColor;
-                context.strokeRect(left, top, width, height);
+                context.strokeRect(box.left, box.top, box.width, box.height);
                 context.stroke();
             }
         }
+
+
+
     }
 
 }

@@ -2,17 +2,17 @@ const { Midi } = require('@tonejs/midi')
 const Tone = require('tone/Tone')
 import { base } from "./base/rect"
 import { UI } from "./ui/ui"
-import { EventObject, Event } from "./base/event"
+import { event } from "./base/event"
+import { clone } from "./base/util"
 
 export class MidiView {
     private view: HTMLElement;
     private canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
-    private midi: any;
     private data: any;
     private ui: UI;
     private container: base.Component;
-    private eobj?: EventObject;
+    private eobj: event.TouchData = { x: 0, y: 0, detailX: 0, detailY: 0, oldX: 0, oldY: 0, x0: 0, y0: 0 };
     private active: boolean = false;
     private keysMap: { [key: string]: boolean } = {};
     private synths: any[] = [];
@@ -34,7 +34,6 @@ export class MidiView {
         } else {
             throw "unsupport canvas 2d"
         }
-        this.midi = new Midi()
         this.container = new base.Component();
         this.container.borderWith = 2;
         this.container.borderColor = "#cccccc";
@@ -43,6 +42,8 @@ export class MidiView {
         this.ui = new UI(this.container);
         this.fit()
         this.bind();
+
+        // this.ui.visible = false;
     }
 
     public refresh() {
@@ -64,112 +65,73 @@ export class MidiView {
     }
 
     public onDown(e: MouseEvent) {
-        this.eobj = {
-            p: new base.Point(),
-            p0: new base.Point(),
-            op: new base.Point(),
-            detailX: 0,
-            detailY: 0
-        }
-        if (this.eobj.p && this.eobj.p0 && this.eobj.op) {
-            this.eobj.p.x = e.offsetX;
-            this.eobj.p.y = e.offsetY;
-            this.eobj.p0.x = e.offsetX;
-            this.eobj.p0.y = e.offsetY;
-            this.active = true;
-            Event.active(this.eobj.p);
-        }
+        this.eobj.x = e.offsetX;
+        this.eobj.y = e.offsetY;
+        this.eobj.x0 = e.offsetX;
+        this.eobj.y0 = e.offsetY;
+        this.eobj.detailX = 0;
+        this.eobj.detailY = 0;
+
+        this.active = true;
+        event.emitComponent(event.TOUCH_DOWN, clone(this.eobj));
+        this.refresh();
     }
 
     public onMove(e: MouseEvent) {
-        if (!this.eobj) {
-            this.eobj = {
-                p: new base.Point(),
-                p0: new base.Point(),
-                op: new base.Point(),
-                detailX: 0,
-                detailY: 0
+        this.eobj.oldX = this.eobj.x;
+        this.eobj.oldY = this.eobj.y;
+        this.eobj.x = e.offsetX;
+        this.eobj.y = e.offsetY;
+        this.eobj.detailX = this.eobj.x - this.eobj.oldX;
+        this.eobj.detailY = this.eobj.y - this.eobj.oldY;
+
+        if (this.active) {
+            if (base.Point.distance(this.eobj.x, this.eobj.y, this.eobj.x0, this.eobj.y0) >= 5) {
+                event.emitComponent(event.TOUCH_MOVE, clone(this.eobj));
             }
-        }
-        if (this.eobj && this.eobj.p && this.eobj.p0 && this.eobj.op) {
-            // console.log("xy:", e.y, e.y, "client:", e.clientX, e.clientY, "page:", e.pageX, e.pageY,
-            //     "layer:", e.layerX, e.layerY, "offset:", e.offsetX, e.offsetY);
-            this.eobj.op.x = this.eobj.p.x;
-            this.eobj.op.y = this.eobj.p.y;
-            this.eobj.p.x = e.offsetX;
-            this.eobj.p.y = e.offsetY;
-            if (this.active) {
-                if (this.eobj.p.distance(this.eobj.p0) >= 5) {
-                    Event.emitDrag({
-                        p: this.eobj.p.clone(),
-                        p0: this.eobj.p0.clone(),
-                        op: this.eobj.op.clone(),
-                        detailX: this.eobj.p.x - this.eobj.op.x,
-                        detailY: this.eobj.p.y - this.eobj.op.y,
-                    });
-                }
-                this.refresh();
-            }
+            this.refresh();
         }
     }
 
     public onUp(e: MouseEvent) {
-        if (this.eobj && this.active && this.eobj.p && this.eobj.p0 && this.eobj.op) {
-            this.eobj.op.x = this.eobj.p.x;
-            this.eobj.op.y = this.eobj.p.y;
-            this.eobj.p.x = e.offsetX;
-            this.eobj.p.y = e.offsetY;
+        this.eobj.oldX = this.eobj.x;
+        this.eobj.oldY = this.eobj.y;
+        this.eobj.x = e.offsetX;
+        this.eobj.y = e.offsetY;
+        this.eobj.detailX = this.eobj.x - this.eobj.oldX;
+        this.eobj.detailY = this.eobj.y - this.eobj.oldY;
 
-            if (this.eobj.p.distance(this.eobj.p0) < 5) {
-                Event.emitClick(e.offsetX, e.offsetY);
-            } else {
-                Event.emitDrag({
-                    p: this.eobj.p.clone(),
-                    p0: this.eobj.p0.clone(),
-                    op: this.eobj.op.clone(),
-                    detailX: this.eobj.p.x - this.eobj.op.x,
-                    detailY: this.eobj.p.y - this.eobj.op.y,
-                })
-            }
-            Event.release();
-            this.refresh();
-            this.active = false;
+        if (base.Point.distance(this.eobj.x, this.eobj.y, this.eobj.x0, this.eobj.y0) < 5) {
+            event.emitComponent(event.TOUCH, clone(this.eobj));
         }
+        event.emitComponent(event.TOUCH_UP, clone(this.eobj));
+        this.refresh();
+        this.active = false;
     }
 
     public onScroll(e: Event) {
         e = e || window.event;
         var detail = (e["wheelDelta"] || e["detail"] || 0) * 0.1;
         if (this.keysMap["ALT"]) {
-            this.eobj && this.eobj.p && Event.emitDrag({
-                p: this.eobj.p.clone(),
-                detailX: detail,
-                detailY: 0,
-            })
+            this.eobj.detailX = detail;
+            this.eobj.detailY = 0;
+            event.emitComponent(event.TOUCH_MOVE, clone(this.eobj));
         } else if (this.keysMap["SHIFT"] && this.keysMap["CONTROL"]) {
-            this.eobj && this.eobj.p && Event.emitScale({
-                p: this.eobj.p.clone(),
-                detailX: detail,
-                detailY: detail,
-            })
+            this.eobj.detailX = detail;
+            this.eobj.detailY = detail;
+            event.emitComponent("scale", clone(this.eobj));
         } else if (this.keysMap["SHIFT"]) {
-            this.eobj && this.eobj.p && Event.emitScale({
-                p: this.eobj.p.clone(),
-                detailX: 0,
-                detailY: detail,
-            })
+            this.eobj.detailX = 0;
+            this.eobj.detailY = detail;
+            event.emitComponent("scale", clone(this.eobj));
         } else if (this.keysMap["CONTROL"]) {
-            this.eobj && this.eobj.p && Event.emitScale({
-                p: this.eobj.p.clone(),
-                detailX: detail,
-                detailY: 0,
-            })
+            this.eobj.detailX = detail;
+            this.eobj.detailY = 0;
+            event.emitComponent("scale", clone(this.eobj));
         } else {
-            this.eobj && this.eobj.p && Event.emitDrag({
-                p: this.eobj.p.clone(),
-                detailX: 0,
-                detailY: detail,
-            })
+            this.eobj.detailX = 0;
+            this.eobj.detailY = detail;
+            event.emitComponent(event.TOUCH_MOVE, clone(this.eobj));
         }
         this.refresh();
     }

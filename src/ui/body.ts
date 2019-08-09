@@ -1,6 +1,5 @@
 import { base } from "../base/rect"
 import { ListView, MidiItem } from "./item";
-import { Event, EventObject, EventCbk } from "../base/event"
 
 export class Body extends base.Component {
     public dw: number = 8;
@@ -90,47 +89,38 @@ export class Body extends base.Component {
         super.onDraw(context);
         context.restore();
 
-        var sx = this.getScaleX(this);
-        var sy = this.getScaleX(this);
-        var psx = this.getScaleX(this.parent);
-        var psy = this.getScaleX(this.parent);
-
-        var width = this.width * sx;
-        var height = this.height * sy;
-
-        var left = (this.parent.x + this.x) * psx;
-        var top = (this.parent.y + this.y) * psy;
+        var box = this.box;
 
         context.lineWidth = this.lineWidth;
         context.strokeStyle = this.lineColor;
 
         for (var i = 0; i * this.dw * this.bate + this.offsetX < this.width; i++) {
             context.beginPath();
-            context.moveTo(left + (this.offsetX + i * this.dw * this.bate) * sx, top)
-            context.lineTo(left + (this.offsetX + i * this.dw * this.bate) * sx, top + height)
+            context.moveTo(box.left + (this.offsetX + i * this.dw * this.bate) * box.sx, box.top)
+            context.lineTo(box.left + (this.offsetX + i * this.dw * this.bate) * box.sx, box.top + box.height)
             context.stroke();
         }
 
         context.beginPath();
         context.strokeStyle = this.indexColor;
         context.lineWidth = this.indexWidth;
-        context.moveTo(left + (this.offsetX + this.position * this.dw) * sx, top);
-        context.lineTo(left + (this.offsetX + this.position * this.dw) * sx, top + height);
+        context.moveTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top);
+        context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
         context.stroke();
 
         if (this.height < this.contentHeight) {
             context.beginPath();
             context.fillStyle = this.barColor;
-            context.fillRect(left + width * sx - 4, top - this.listView.offsetY * this.scrollSpeedY * sy, 4, this.scrollBarHeight * sy);
+            context.fillRect(box.left + box.width * box.sx - 4, box.top - this.listView.offsetY * this.scrollSpeedY * box.sy, 4, this.scrollBarHeight * box.sy);
         }
 
         if (this.width < this.contentWidth) {
             context.beginPath();
             context.strokeStyle = this.barColor;
-            context.strokeRect(left, top + height * sy - 4, width * sx, 4)
+            context.strokeRect(box.left, box.top + box.height * box.sy - 4, box.width * box.sx, 4)
             context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(left - this.listView.offsetX * this.scrollSpeedX * sx, top + height * sy - 4, this.scrollBarWidth * sx, 4);
+            context.fillRect(box.left - this.listView.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - 4, this.scrollBarWidth * box.sx, 4);
         }
     }
 }

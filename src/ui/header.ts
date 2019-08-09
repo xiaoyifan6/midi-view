@@ -16,27 +16,21 @@ export class Header extends base.Component {
         super.onDraw(context);
         if (!this.parent) return
 
-        var sx = this.getScaleX(this);
-        var sy = this.getScaleX(this);
-        var psx = this.getScaleX(this.parent);
-        var psy = this.getScaleX(this.parent);
-
-        var left = (this.parent.x + this.x) * psx;
-        var top = (this.parent.y + this.y) * psy;
-
         context.lineWidth = this.lineWidth;
         context.strokeStyle = this.lineColor;
+
+        var box = this.box;
 
         var i = 0;
         for (var x = 0; x + this.offsetX < this.width; x += this.dw) {
             context.beginPath();
             if (i % this.bate == 0) {
-                context.moveTo(left + (this.offsetX + x) * sx, top)
-                context.lineTo(left + (this.offsetX + x) * sx, top + this.height * sy)
-                context.strokeText(`${i / this.bate + 1}`, left + (this.offsetX + x) * sx + this.lineWidth * 4, top + this.height * sy * 2 / 5);
+                context.moveTo(box.left + (this.offsetX + x) * box.sx, box.top)
+                context.lineTo(box.left + (this.offsetX + x) * box.sx, box.top + this.height * box.sy)
+                context.strokeText(`${i / this.bate + 1}`, box.left + (this.offsetX + x) * box.sx + this.lineWidth * 4, box.top + box.height * 2 / 5);
             } else {
-                context.moveTo(left + (this.offsetX + x) * sx, top + this.height * sy / 2)
-                context.lineTo(left + (this.offsetX + x) * sx, top + this.height * sy * 3 / 2)
+                context.moveTo(box.left + (this.offsetX + x) * box.sx, box.top + box.height / 2)
+                context.lineTo(box.left + (this.offsetX + x) * box.sx, box.top + box.height * 3 / 2)
             }
             context.stroke();
             i++;
@@ -45,8 +39,8 @@ export class Header extends base.Component {
         context.beginPath();
         context.strokeStyle = this.indexColor;
         context.lineWidth = this.indexWidth;
-        context.moveTo(left + (this.offsetX + this.position * this.dw) * sx, top);
-        context.lineTo(left + (this.offsetX + this.position * this.dw) * sx, top + this.height * sy);
+        context.moveTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top);
+        context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
         context.stroke();
     }
 

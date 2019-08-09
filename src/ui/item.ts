@@ -2,7 +2,6 @@ import { base } from "../base/rect"
 import { Tone, MusicalInstrumentData } from "../constant/data"
 
 export class Item extends base.Component {
-
     protected data: any;
     public padding: number = 0;
     public recycle: boolean = true;
@@ -78,7 +77,6 @@ export class ListView {
         }
     }
 
-
 }
 
 export class MidiItem extends Item {
@@ -99,17 +97,9 @@ export class MidiItem extends Item {
 
         if (!this.data) return;
 
-        var sx = this.getScaleX(this);
-        var sy = this.getScaleX(this);
-        var psx = this.getScaleX(this.parent);
-        var psy = this.getScaleX(this.parent);
+        var box = this.box;
 
-        var left = (this.parent.x + this.x) * psx;
-        var top = (this.parent.y + this.y) * psy;
-        var width = this.width * sx;
-        var height = this.height * sy;
-
-        var eh = height / Tone.length;
+        var eh = box.height / Tone.length;
 
         context.strokeStyle = "#00ff00"; // dark
 
@@ -119,8 +109,8 @@ export class MidiItem extends Item {
         var s = (this.data["instrument"] || {})["number"] || "" + "";
         if (s) {
             var tm = context.measureText(s);
-            context.strokeRect(left, top, tm.width * 2, 14);
-            context.strokeText(s, left + tm.width / 2, top + 10);
+            context.strokeRect(box.left, box.top, tm.width * 2, 14);
+            context.strokeText(s, box.left + tm.width / 2, box.top + 10);
         }
 
         var nodes = this.data.notes;
@@ -133,13 +123,13 @@ export class MidiItem extends Item {
             context.beginPath();
             var yy = Tone.indexOf(node.name);
             context.moveTo(
-                left + (node.time * this.dw + this.offsetX) * sx,
-                top + eh * yy * sy
+                box.left + (node.time * this.dw + this.offsetX) * box.sx,
+                box.top + eh * yy * box.sy
             );
 
             context.lineTo(
-                left + ((node.time + node.duration) * this.dw + this.offsetX) * sx,
-                top + eh * yy * sy
+                box.left + ((node.time + node.duration) * this.dw + this.offsetX) * box.sx,
+                box.top + eh * yy * box.sy
             );
             context.closePath();
             context.stroke();
@@ -162,15 +152,7 @@ export class HeadInfoItem extends Item {
         super.onDraw(context);
         if (!this.data) return;
 
-        var sx = this.getScaleX(this);
-        var sy = this.getScaleX(this);
-        var psx = this.getScaleX(this.parent);
-        var psy = this.getScaleX(this.parent);
-
-        var left = (this.parent.x + this.x) * psx;
-        var top = (this.parent.y + this.y) * psy;
-        var width = this.width * sx;
-        var height = this.height * sy;
+        var box = this.box;
 
         context.strokeStyle = this.textColor;
         context.font = this.font;
@@ -179,7 +161,7 @@ export class HeadInfoItem extends Item {
         var arr = MusicalInstrumentData[s];
         if (arr && arr.length > 0) {
             // var tm = context.measureText(arr[1]);
-            context.strokeText(arr[1], left + 4, top + height / 2, width);
+            context.strokeText(arr[1], box.left + 4, box.top + box.height / 2, box.width);
         }
     }
 }

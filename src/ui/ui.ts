@@ -2,7 +2,7 @@ import { base } from "../base/rect"
 import { Header } from "./header"
 import { Body } from "./body"
 import { Left } from "./left";
-import { Event, EventObject } from "../base/event"
+import { event } from "../base/event"
 
 export class UI {
     public hearder: Header;
@@ -34,11 +34,30 @@ export class UI {
         this.bind();
     }
 
+    public set visible(_visible: boolean) {
+        this.body.visible = _visible;
+        this.hearder.visible = _visible;
+        this.left.visible = _visible;
+    }
+
+    public remove() {
+        this.container.removeChild(this.body);
+        this.container.removeChild(this.hearder);
+        this.container.removeChild(this.left);
+    }
+
+    public add(cmp: base.Component) {
+        this.container = cmp;
+        this.container.addChild(this.body);
+        this.container.addChild(this.hearder);
+        this.container.addChild(this.left);
+    }
+
     public bind() {
         var self = this;
-        var cbk = (eobj: EventObject, obj: base.Component) => {
-            let dy = eobj.detailY;// eobj.p.y - eobj.op.y;
-            let dx = eobj.detailX;//eobj.p.x - eobj.op.x;
+        var cbk = (eobj: event.EventObject) => {
+            let dy = eobj.data.detailY;// eobj.p.y - eobj.op.y;
+            let dx = eobj.data.detailX;//eobj.p.x - eobj.op.x;
             // dx *= 0.2;
 
             if (self.body.listView.offsetY + dy <= 0 && self.body.listView.offsetY + self.body.listView.contentHeight + dy >= self.body.height) {
@@ -48,19 +67,19 @@ export class UI {
                 self.left.listView.refresh();
             }
 
-            if (obj === self.body && self.body.offsetX + dx <= 0 && self.body.offsetX + self.body.contentWidth + dx >= self.body.width) {
+            if (eobj.target === self.body && self.body.offsetX + dx <= 0 && self.body.offsetX + self.body.contentWidth + dx >= self.body.width) {
                 self.body.listView.offsetX += dx;
                 self.body.offsetX = self.body.listView.offsetX;
                 self.hearder.offsetX += dx;
                 self.body.listView.refresh();
             }
         }
-        Event.bindDrag(cbk, this.body);
-        Event.bindDrag(cbk, this.left);
+        event.bind(event.TOUCH_MOVE, cbk, this.body);
+        event.bind(event.TOUCH_MOVE, cbk, this.left);
 
-        var cbk = (eobj: EventObject, obj: base.Component) => {
-            let dy = eobj.detailY;// eobj.p.y - eobj.op.y;
-            let dx = eobj.detailX;//eobj.p.x - eobj.op.x;
+        var cbk = (eobj: event.EventObject) => {
+            let dy = eobj.data.detailY;// eobj.p.y - eobj.op.y;
+            let dx = eobj.data.detailX;//eobj.p.x - eobj.op.x;
 
             if (self.body.listView.itemHeight + dy >= 40 && self.body.listView.itemHeight + dy <= self.body.height / 2) {
                 self.body.listView.itemHeight += dy;
@@ -87,15 +106,14 @@ export class UI {
             }
         };
 
-        Event.bindScale(cbk, this.body);
+        event.bind("scale", cbk, this.body);
 
-        var cbk2 = (eobj: EventObject, obj: base.Component) => {
-            var x = Math.floor((eobj.detailX - self.body.offsetX - self.body.left) / self.hearder.dw);
+        var cbk2 = (eobj: event.EventObject) => {
+            var x = Math.floor((eobj.data.x - self.body.offsetX - self.body.left) / self.hearder.dw);
             self.body.position = x;
             self.hearder.position = x;
         }
-
-        Event.bindClick(cbk2, this.hearder);
+        event.bind(event.TOUCH, cbk2, this.hearder);
     }
 
     public refresh() {
