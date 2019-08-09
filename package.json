@@ -2,7 +2,7 @@
   "name": "midi-view",
   "version": "1.0.0",
   "description": "midi view",
-  "private": false,
+  "main": "src/main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=development"
@@ -11,7 +11,7 @@
     "midi",
     "view"
   ],
-  "author": "yangzhi.ou",
+  "author": "xiaoyifan <http://www/mylib.xyz>",
   "license": "TIM",
   "devDependencies": {
     "@types/lodash": "^4.14.136",
