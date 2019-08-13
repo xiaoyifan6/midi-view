@@ -1,9 +1,10 @@
 const { Midi } = require('@tonejs/midi')
 const Tone = require('tone/Tone')
-import { base } from "./base/rect"
+import { base } from "./base/base"
 import { UI } from "./ui/ui"
 import { event } from "./base/event"
 import { clone } from "./base/util"
+import { DUI } from "./dui/dui";
 
 export class MidiView {
     private view: HTMLElement;
@@ -11,6 +12,7 @@ export class MidiView {
     private context: CanvasRenderingContext2D;
     private data: any;
     private ui: UI;
+    private dui: DUI;
     private container: base.Component;
     private eobj: event.TouchData = { x: 0, y: 0, detailX: 0, detailY: 0, oldX: 0, oldY: 0, x0: 0, y0: 0 };
     private active: boolean = false;
@@ -40,10 +42,14 @@ export class MidiView {
         this.container.parent = new base.Component();
 
         this.ui = new UI(this.container);
+        this.dui = new DUI(this.container);
+
         this.fit()
         this.bind();
 
         // this.ui.visible = false;
+        this.ui.hide();
+        this.dui.show();
     }
 
     public refresh() {
@@ -62,6 +68,10 @@ export class MidiView {
         document.addEventListener("keyup", this.onKeyUp.bind(this));
 
         this.canvas.addEventListener("position", this.onPosition.bind(this));
+
+        event.bind("refresh", (e: event.EventObject) => {
+            this.refresh();
+        }, this);
     }
 
     public onDown(e: MouseEvent) {
@@ -160,9 +170,8 @@ export class MidiView {
     public fit() {
         this.canvas.width = this.view.offsetWidth;
         this.canvas.height = this.view.offsetHeight;
-        this.container.width = this.canvas.width;
-        this.container.height = this.canvas.height;
-        this.ui.refresh();
+        this.ui.resize(this.canvas.width, this.canvas.height);
+        this.dui.resize(this.canvas.width, this.canvas.height);
         this.container.onResize();
         this.refresh();
     }
@@ -197,8 +206,8 @@ export class MidiView {
         }
 
         this.intervalIndex = setInterval(() => {
-            self.ui.body.position = (Tone.now() - self.startTime) * 2;
-            self.ui.hearder.position = self.ui.body.position;
+            self.ui.position = (Tone.now() - self.startTime) * 2;
+            self.dui.position = (Tone.now() - self.startTime);
             self.refresh();
         }, 100);
     }
@@ -217,26 +226,17 @@ export class MidiView {
     public async loadFromUrl(url: string) {
         this.data = await Midi.fromUrl(url);
         if (this.data) {
-            // bmp
-            var bpm = 0.5;
             if (this.data["header"] && this.data["header"]["tempos"][0]) {
                 if (this.data["header"]["tempos"]) {
-                    bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
                     Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
                 }
                 if (this.data["header"]["ppq"]) {
                     Tone.Transport.PPQ = this.data["header"]["ppq"];
                 }
             }
-
-            this.ui.body.bpm = bpm;
-            this.ui.hearder.bpm = bpm;
-
-            (this.ui.body.duration = this.data["duration"] || 0)
-            this.ui.body.setData(this.data.tracks)
-            this.ui.left.setData(this.data.tracks)
-            this.ui.hearder.dw = this.ui.body.dw;
-            this.ui.hearder.position = this.ui.body.position;
+            // bmp
+            this.ui.setData(this.data);
+            this.dui.setData(this.data);
             this.refresh();
             console.log(this.data);
         }

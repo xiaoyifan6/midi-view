@@ -1,27 +1,25 @@
-import { base } from "../base/rect"
+import { base } from "../base/base"
 import { Header } from "./header"
 import { Body } from "./body"
 import { Left } from "./left";
 import { event } from "../base/event"
 
-export class UI {
+export class UI extends base.BaseUI {
     public hearder: Header;
     public left: Left;
     public body: Body;
-    private container: base.Component;
 
     private headHeight: number;
     private leftWidth: number;
 
     public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 80) {
-        this.container = container;
+        super(container);
         this.headHeight = headHeight;
         this.leftWidth = leftWidth;
 
         this.hearder = new Header(leftWidth, 0, container.width - leftWidth, headHeight);
         this.left = new Left(0, headHeight, leftWidth, container.height - headHeight);
         this.body = new Body(leftWidth, headHeight, container.width - leftWidth, container.height - headHeight);
-
 
         this.hearder.borderWith = 1;
         this.hearder.dw = this.body.dw;
@@ -32,25 +30,6 @@ export class UI {
         container.addChild(this.hearder);
         container.addChild(this.left);
         this.bind();
-    }
-
-    public set visible(_visible: boolean) {
-        this.body.visible = _visible;
-        this.hearder.visible = _visible;
-        this.left.visible = _visible;
-    }
-
-    public remove() {
-        this.container.removeChild(this.body);
-        this.container.removeChild(this.hearder);
-        this.container.removeChild(this.left);
-    }
-
-    public add(cmp: base.Component) {
-        this.container = cmp;
-        this.container.addChild(this.body);
-        this.container.addChild(this.hearder);
-        this.container.addChild(this.left);
     }
 
     public bind() {
@@ -106,7 +85,7 @@ export class UI {
             }
         };
 
-        event.bind("scale", cbk, this.body);
+        event.bind(event.TOUCH_SCALE, cbk, this.body);
 
         var cbk2 = (eobj: event.EventObject) => {
             var x = Math.floor((eobj.data.x - self.body.offsetX - self.body.left) / self.hearder.dw);
@@ -116,9 +95,54 @@ export class UI {
         event.bind(event.TOUCH, cbk2, this.hearder);
     }
 
+
+    public setData(data: any) {
+        super.setData(data);
+        var bpm = 0.5;
+        if (this.data["header"] && this.data["header"]["tempos"][0]) {
+            if (this.data["header"]["tempos"]) {
+                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+            }
+
+        }
+
+        this.body.bpm = bpm;
+        this.hearder.bpm = bpm;
+
+        this.body.duration = this.data["duration"] || 0
+        this.body.setData(this.data.tracks)
+        this.left.setData(this.data.tracks)
+        this.hearder.dw = this.body.dw;
+        this.hearder.position = this.body.position;
+    }
+
+    public resize(width: number, height: number) {
+        super.resize(width, height);
+        this.refresh();
+    }
+
     public refresh() {
         this.hearder.set(this.leftWidth, 0, this.container.width - this.leftWidth, this.headHeight);
         this.left.set(0, this.headHeight, this.leftWidth, this.container.height - this.headHeight);
         this.body.set(this.leftWidth, this.headHeight, this.container.width - this.leftWidth, this.container.height - this.headHeight);
+    }
+
+    public set position(p: number) {
+        this.body.position = p;
+        this.hearder.position = this.body.position;
+    }
+
+    public hide() {
+        super.hide();
+        this.body.visible = false;
+        this.hearder.visible = false;
+        this.left.visible = false;
+    }
+
+    public show() {
+        super.show();
+        this.body.visible = true;
+        this.hearder.visible = true;
+        this.left.visible = true;
     }
 }

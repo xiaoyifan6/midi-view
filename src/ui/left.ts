@@ -1,4 +1,4 @@
-import { base } from "../base/rect"
+import { base } from "../base/base"
 import { ListView, HeadInfoItem } from "./item";
 
 export class Left extends base.Component {

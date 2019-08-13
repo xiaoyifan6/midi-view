@@ -1,7 +1,7 @@
 
 import { test } from "./Test";
 import { MidiView } from "./main"
-import { base } from "./base/rect"
+import { base } from "./base/base"
 
 test()
 console.log("aaa");

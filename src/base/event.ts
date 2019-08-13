@@ -1,5 +1,5 @@
 
-import { base } from "../base/rect"
+import { base } from "./base"
 
 export namespace event {
 
@@ -66,7 +66,7 @@ export namespace event {
                 if (cmp.active && cmp.visible) {
                     obj.cbk.call(obj.target, obj);
                 }
-                if (type === TOUCH_UP) {
+                if (type === TOUCH_UP || type === TOUCH) {
                     cmp.active = false;
                 }
             }

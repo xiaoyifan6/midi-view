@@ -77,6 +77,9 @@ export namespace base {
         public contain(p: Point): boolean {
             return p.x > this.left && p.x < this.right && p.y > this.top && p.y < this.bottom;
         }
+        public contain2(x: number, y: number): boolean {
+            return x > this.left && x < this.right && y > this.top && y < this.bottom;
+        }
 
         public clone(): Rect {
             return new Rect(this.x, this.y, this.width, this.height);
@@ -101,6 +104,9 @@ export namespace base {
         public get top(): number { return ((this.cmp.parent ? this.cmp.parent.y : 0) + this.cmp.y) * this.psy; }
         public get width(): number { return this.cmp.width * this.sx; }
         public get height(): number { return this.cmp.height * this.sy; }
+
+        public get bottom(): number { return this.top + this.height; }
+        public get right(): number { return this.left + this.width; }
     }
 
     export class Component extends Rect {
@@ -120,11 +126,14 @@ export namespace base {
         public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
             super(x, y, width, height);
             this.box = new Box(this);
+            this.init();
         }
 
         public release() {
             this.active = false;
         }
+
+        protected init() { }
 
         public tryActive(p: Point) {
             if (this.contain(p) && this.visible) {
@@ -149,6 +158,7 @@ export namespace base {
 
         public removeChildAt(index: number) {
             this.children[index] && (this.children[index].parent = undefined);
+            this.children[index].onDettach();
             this.children.splice(index, 1);
         }
 
@@ -172,6 +182,10 @@ export namespace base {
 
         public getBound(left: number, top: number, width: number, height: number): Rect {
             return new Rect(left, top, width, height)
+        }
+
+        public onDettach() {
+
         }
 
         public onDraw(context: CanvasRenderingContext2D) {
@@ -205,8 +219,59 @@ export namespace base {
             }
         }
 
+    }
 
+    export abstract class BaseUI {
 
+        protected container: Component;
+        protected data: any;
+
+        public constructor(container: Component) {
+            this.container = container;
+        }
+
+        public addChild(cmp: Component) {
+            this.container.addChild(cmp);
+        }
+
+        public removeChile(cmp: Component) {
+            this.container.removeChild(cmp);
+        }
+
+        public resize(width: number, height: number) {
+            this.container.width = width;
+            this.container.height = height;
+        }
+
+        public setData(data: any) {
+            this.data = data;
+        }
+
+        public onDraw(context: CanvasRenderingContext2D) {
+            if (this.container.visible) {
+                this.container.onDraw(context);
+            }
+        }
+
+        public get width(): number {
+            return this.container.width;
+        }
+
+        public get height(): number {
+            return this.container.height;
+        }
+
+        public hide() {
+
+        }
+
+        public show() {
+
+        }
+
+        public onResize() {
+            this.container.onResize();
+        }
     }
 
 }

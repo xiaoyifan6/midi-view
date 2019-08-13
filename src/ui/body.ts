@@ -1,8 +1,9 @@
-import { base } from "../base/rect"
+import { base } from "../base/base"
 import { ListView, MidiItem } from "./item";
 
 export class Body extends base.Component {
     public dw: number = 8;
+    private paddingRight = 40;
     // public dw2: number = 60;
 
     public offsetX: number = 0;
@@ -39,7 +40,7 @@ export class Body extends base.Component {
 
     public get contentWidth(): number {
         // return this.duration * this.dw2;
-        return this.duration * this.bpm * this.dw;
+        return this.duration * this.bpm * this.dw + this.paddingRight;
     }
 
     public get scrollHeight(): number {

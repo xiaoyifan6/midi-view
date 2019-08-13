@@ -1,4 +1,4 @@
-import { base } from "../base/rect"
+import { base } from "../base/base"
 import { Tone, MusicalInstrumentData } from "../constant/data"
 
 export class Item extends base.Component {

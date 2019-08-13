@@ -1,4 +1,4 @@
-import { base } from "../base/rect"
+import { base } from "../base/base"
 
 export class Header extends base.Component {
     public dw: number = 8;
