@@ -27,6 +27,8 @@ export class Slider extends base.Component {
     public onDraw(context: CanvasRenderingContext2D) {
         if (this.parent == null || !this.visible) return;
 
+        super.onDraw(context);
+
         var box = this.box;
         context.beginPath();
         context.strokeStyle = this.bgColor1;

@@ -1,6 +1,7 @@
 import { base } from "../base/base"
 import { Tone, MusicalInstrumentData } from "../constant/data"
 import { event } from "../base/event";
+import { Switch } from "../views/switch"
 
 export class Item extends base.Component {
     protected data: any;
