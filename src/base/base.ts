@@ -107,6 +107,13 @@ export namespace base {
 
         public get bottom(): number { return this.top + this.height; }
         public get right(): number { return this.left + this.width; }
+
+        public contain(p: Point): boolean {
+            return p.x > this.left && p.x < this.right && p.y > this.top && p.y < this.bottom;
+        }
+        public contain2(x: number, y: number): boolean {
+            return x > this.left && x < this.right && y > this.top && y < this.bottom;
+        }
     }
 
     export class Component extends Rect {
@@ -136,7 +143,7 @@ export namespace base {
         protected init() { }
 
         public tryActive(p: Point) {
-            if (this.contain(p) && this.visible) {
+            if (this.box.contain(p) && this.visible) {
                 this.active = true;
             }
         }

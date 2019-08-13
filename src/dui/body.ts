@@ -72,7 +72,7 @@ export class Body extends base.Component {
 
     public onDraw(context: CanvasRenderingContext2D) {
 
-        if (!this.parent) return
+        if (!this.parent || this.bpm <= 0) return
 
         super.onDraw(context);
 
@@ -123,9 +123,9 @@ export class Body extends base.Component {
             }
             let node = this.nodes[i];
             var yy = Tone.indexOf(node.name);
-            let rect = new base.Rect(this.offsetX + box.left + node.time * this.dw * box.sx,
+            let rect = new base.Rect(this.offsetX + box.left + node.time * this.bpm * this.dw * box.sx,
                 this.offsetY + box.top + yy * this.dh * box.sy,
-                node.duration * this.dw * box.sx,
+                node.duration * this.bpm * this.dw * box.sx,
                 this.dh * box.sy);
             context.fillRect(rect.x, rect.y, rect.width, rect.height);
             this.rects.push(rect);

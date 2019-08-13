@@ -1,5 +1,6 @@
 import { base } from "../base/base"
 import { Tone, MusicalInstrumentData } from "../constant/data"
+import { event } from "../base/event";
 
 export class Item extends base.Component {
     protected data: any;
@@ -17,6 +18,14 @@ export class Item extends base.Component {
     public onDraw(context: CanvasRenderingContext2D) {
         if (this.recycle) return;
         super.onDraw(context);
+    }
+
+    public hit(x: number, y: number): boolean {
+        return this.box.contain2(x, y);
+    }
+
+    public onSelect() {
+
     }
 }
 
@@ -77,6 +86,16 @@ export class ListView {
         }
     }
 
+    public hit(x: number, y: number): boolean {
+        for (var i in this.views) {
+            if (!this.views[i].recycle && this.views[i].hit(x, y)) {
+                this.views[i].onSelect();
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 export class MidiItem extends Item {
@@ -133,6 +152,13 @@ export class MidiItem extends Item {
             );
             context.closePath();
             context.stroke();
+        }
+    }
+
+    public onSelect() {
+        super.onSelect();
+        if (this.data && this.data.notes && this.data.notes.length) {
+            event.emit("show-detail", this.data.notes);
         }
     }
 }

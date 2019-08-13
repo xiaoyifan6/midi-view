@@ -11,7 +11,7 @@ export class Button extends Label {
     public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
         super(x, y, width, height);
         event.bind(event.TOUCH_DOWN, this.onDown, this);
-        event.bind(event.TOUCH_UP, this.onUp, this);
+        // event.bind(event.TOUCH_UP, this.onUp, this);
     }
 
     public onDown(eobj: event.EventObject) {
@@ -19,16 +19,16 @@ export class Button extends Label {
         this.oy = this.y;
         this.x += this.offsetX;
         this.y += this.offsetY;
+
+        setTimeout(() => {
+            this.x = this.ox;
+            this.y = this.oy;
+        }, 500);
     }
 
     public onDettach() {
         super.onDettach();
         event.cancel(event.TOUCH_DOWN, this.onDown, this);
-        event.cancel(event.TOUCH_UP, this.onUp, this);
-    }
-
-    public onUp(eobj: event.EventObject) {
-        this.x = this.ox;
-        this.y = this.oy;
+        // event.cancel(event.TOUCH_UP, this.onUp, this);
     }
 }

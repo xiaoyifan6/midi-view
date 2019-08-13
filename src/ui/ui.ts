@@ -93,17 +93,19 @@ export class UI extends base.BaseUI {
             self.hearder.position = x;
         }
         event.bind(event.TOUCH, cbk2, this.hearder);
+
+        var cbk2 = (eobj: event.EventObject) => {
+            self.body.listView.hit(eobj.data.x, eobj.data.y)
+        }
+        event.bind(event.TOUCH, cbk2, this.body);
     }
 
 
     public setData(data: any) {
         super.setData(data);
         var bpm = 0.5;
-        if (this.data["header"] && this.data["header"]["tempos"][0]) {
-            if (this.data["header"]["tempos"]) {
-                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
-            }
-
+        if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
         }
 
         this.body.bpm = bpm;
@@ -112,7 +114,12 @@ export class UI extends base.BaseUI {
         this.body.duration = this.data["duration"] || 0
         this.body.setData(this.data.tracks)
         this.left.setData(this.data.tracks)
-        this.hearder.dw = this.body.dw;
+
+        this.hearder.offsetX = 0;
+        this.hearder.dw = this.body.dw = 8;
+        for (var i in this.body.listView.views) {
+            this.body.listView.views[i]["dw"] = this.body.dw * this.body.bpm;
+        }
         this.hearder.position = this.body.position;
     }
 

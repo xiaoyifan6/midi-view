@@ -4,6 +4,7 @@ import { Left } from "./left"
 import { Header } from "../ui/header";
 import { Body } from "./body";
 import { event } from "../base/event";
+import { views } from "../views/views";
 
 export class DUI extends base.BaseUI {
     private headHeight: number;
@@ -13,6 +14,7 @@ export class DUI extends base.BaseUI {
     public hearder: Header;
     public body: Body;
     private synth: any;
+    private closeBtn: base.Component;
 
 
     public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 60) {
@@ -34,9 +36,15 @@ export class DUI extends base.BaseUI {
         // this.left.dh = this.body.dh * 3 / 2;
         this.left.dh = this.body.dh * 82 / 48;
 
+        var closeBtn = new views.Button(10, 10, 40, 20);
+        closeBtn.text = "关 闭";
+        closeBtn.borderWith = 0.4;
+        this.closeBtn = closeBtn;
+
         container.addChild(this.hearder);
         container.addChild(this.left);
         container.addChild(this.body);
+        container.addChild(this.closeBtn);
 
         this.bind();
     }
@@ -117,6 +125,10 @@ export class DUI extends base.BaseUI {
             }
         }
         event.bind(event.TOUCH, cbk2, this.left);
+
+        event.bind(event.TOUCH, (e: event.EventObject) => {
+            event.emit("hide-detail");
+        }, this.closeBtn);
     }
 
     public hide() {
@@ -124,6 +136,7 @@ export class DUI extends base.BaseUI {
         this.left.visible = false;
         this.hearder.visible = false;
         this.body.visible = false;
+        this.closeBtn.visible = false;
         if (this.synth) {
             this.synth.dispose()
             this.synth = false;
@@ -135,6 +148,7 @@ export class DUI extends base.BaseUI {
         this.left.visible = true;
         this.hearder.visible = true;
         this.body.visible = true;
+        this.closeBtn.visible = true;
         this.synth = new Tone.PolySynth(4, Tone.Synth, {
             envelope: {
                 attack: 0.02,
@@ -159,11 +173,8 @@ export class DUI extends base.BaseUI {
     public setData(data: any) {
         super.setData(data);
         var bpm = 0.5;
-        if (this.data["header"] && this.data["header"]["tempos"][0]) {
-            if (this.data["header"]["tempos"]) {
-                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
-            }
-
+        if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
         }
 
         this.body.bpm = bpm;
@@ -173,6 +184,15 @@ export class DUI extends base.BaseUI {
         this.body.setData(this.data.tracks[0].notes)
         console.log(this.data.tracks[0].notes)
         // this.left.setData(this.data.tracks)
+        this.hearder.dw = this.body.dw = 40;
+        this.left.dh = this.body.dh * 82 / 48;
+        this.hearder.offsetX = 0;
+        this.left.offsetY = 0;
+        this.hearder.position = this.body.position = 0;
+    }
+
+    public setNodesData(data: any) {
+        this.body.setData(data);
         this.hearder.dw = this.body.dw = 40;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;

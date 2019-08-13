@@ -20,7 +20,7 @@ export class MidiView {
     private synths: any[] = [];
     private startTime: number = 0;
     private intervalIndex: any;
-
+    public bpm: number = 0.5;
 
     public constructor(view: HTMLElement) {
         this.view = view;
@@ -48,8 +48,8 @@ export class MidiView {
         this.bind();
 
         // this.ui.visible = false;
-        this.ui.hide();
-        this.dui.show();
+        // this.ui.hide();
+        this.dui.hide();
     }
 
     public refresh() {
@@ -70,6 +70,17 @@ export class MidiView {
         this.canvas.addEventListener("position", this.onPosition.bind(this));
 
         event.bind("refresh", (e: event.EventObject) => {
+            this.refresh();
+        }, this);
+        event.bind("show-detail", (e: event.EventObject) => {
+            this.ui.hide();
+            this.dui.show();
+            this.dui.setNodesData(e.data);
+            this.refresh();
+        }, this);
+        event.bind("hide-detail", (e: event.EventObject) => {
+            this.ui.show();
+            this.dui.hide();
             this.refresh();
         }, this);
     }
@@ -206,8 +217,8 @@ export class MidiView {
         }
 
         this.intervalIndex = setInterval(() => {
-            self.ui.position = (Tone.now() - self.startTime) * 2;
-            self.dui.position = (Tone.now() - self.startTime);
+            self.ui.position = (Tone.now() - self.startTime) * this.bpm;
+            self.dui.position = (Tone.now() - self.startTime) * this.bpm;
             self.refresh();
         }, 100);
     }
@@ -224,11 +235,13 @@ export class MidiView {
     }
 
     public async loadFromUrl(url: string) {
+        this.stop();
         this.data = await Midi.fromUrl(url);
         if (this.data) {
-            if (this.data["header"] && this.data["header"]["tempos"][0]) {
-                if (this.data["header"]["tempos"]) {
+            if (this.data["header"]) {
+                if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
                     Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
+                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
                 }
                 if (this.data["header"]["ppq"]) {
                     Tone.Transport.PPQ = this.data["header"]["ppq"];

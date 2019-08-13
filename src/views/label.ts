@@ -18,14 +18,15 @@ export class Label extends base.Component {
 
     public onDraw(context: CanvasRenderingContext2D) {
         if (this.parent == null || !this.visible) return;
+        super.onDraw(context);
 
         var box = this.box;
 
         context.beginPath();
         context.strokeStyle = this.textColor;
         context.font = this.font;
+        var m = context.measureText(this._text);
         if (this.multyLine) {
-            var m = context.measureText(this._text);
             if (m.width <= this.width) {
                 context.strokeText(this._text, box.left, box.top, this.maxWidth);
             } else {
@@ -36,7 +37,7 @@ export class Label extends base.Component {
                 }
             }
         } else {
-            context.strokeText(this._text, box.left, box.top, this.maxWidth);
+            context.strokeText(this._text, box.left + (box.width - m.width) / 2, box.top + box.height / 2 + 14 / 4);
         }
         context.stroke();
     }
