@@ -65,7 +65,7 @@ export class Left extends base.Component {
 
                 context.strokeRect(rect.x, rect.y, rect.width, rect.height);
 
-                if (/C[-]*[0-9]/.test(t)) {
+                if (/C[-]*[0-9]/.test(t) || this.dh >= 30) {
                     var tm = context.measureText(t);
                     context.strokeText(t, box.left + w - tm.width - 4, y + this.dh * box.sy * 2 / 3);
                 }
@@ -80,16 +80,25 @@ export class Left extends base.Component {
             let y = this.offsetY + box.top + this.dh * (yarr[i].j - 0.5) * box.sy + p;
             w = box.left + box.width * 2 / 3;
             if (y > box.bottom) break;
-            if (this.selectKey[Tone[yarr[i].i]]) {
+            let t = Tone[yarr[i].i];
+            if (this.selectKey[t]) {
                 context.fillStyle = this.keyColor;
             } else {
                 context.fillStyle = this.blackColor;
             }
             var rect = new base.Rect(box.left, y, w, this.dh * box.sy - p * 2);
             context.fillRect(rect.x, rect.y, rect.width, rect.height);
+            if (this.dh >= 30) {
+                context.beginPath();
+                context.strokeStyle = this.whiteColor;
+                var tm = context.measureText(t);
+                context.strokeText(t, box.left + 4, y + this.dh * box.sy * 2 / 3);
+                context.stroke();
+            }
+
             this.rects.push({
                 rect: rect,
-                index: Tone[yarr[i].i]
+                index: t
             });
         }
         this.rects.reverse();

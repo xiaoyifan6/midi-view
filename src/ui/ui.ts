@@ -103,7 +103,7 @@ export class UI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = 0.5;
+        var bpm = 2;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
             bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
         }

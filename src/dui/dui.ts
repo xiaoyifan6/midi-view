@@ -17,7 +17,7 @@ export class DUI extends base.BaseUI {
     private closeBtn: base.Component;
 
 
-    public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 60) {
+    public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 70) {
         super(container);
         this.headHeight = headHeight;
         this.leftWidth = leftWidth;
@@ -73,12 +73,13 @@ export class DUI extends base.BaseUI {
         event.bind(event.TOUCH_MOVE, cbk, this.left);
 
         var cbk = (eobj: event.EventObject) => {
-            let dy = eobj.data.detailY;// eobj.p.y - eobj.op.y;
+            let dy = eobj.data.detailY * 0.2;// eobj.p.y - eobj.op.y;
             let dx = eobj.data.detailX;//eobj.p.x - eobj.op.x;
 
             if (dy != 0 && self.body.dh + dy >= 8 && self.body.dh + dy <= self.body.height / 4) {
                 self.body.dh += dy;
                 self.left.dh = self.body.dh * 82 / 48;
+                // console.log(this.left.dh)
                 self.body.offsetY = 0;
                 self.left.offsetY = 0;
             }
@@ -172,7 +173,7 @@ export class DUI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = 0.5;
+        var bpm = 2;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
             bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
         }

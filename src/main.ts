@@ -20,7 +20,7 @@ export class MidiView {
     private synths: any[] = [];
     private startTime: number = 0;
     private intervalIndex: any;
-    public bpm: number = 0.5;
+    public bpm: number = 2;
 
     public constructor(view: HTMLElement) {
         this.view = view;
@@ -242,6 +242,8 @@ export class MidiView {
                 if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
                     Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
                     this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+                } else {
+                    Tone.Transport.bpm.value = 120;
                 }
                 if (this.data["header"]["ppq"]) {
                     Tone.Transport.PPQ = this.data["header"]["ppq"];
