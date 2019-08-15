@@ -1,12 +1,16 @@
 {
   "name": "midi-view",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "midi view",
-  "main": "src/main.ts",
+  "main": "build/midi_view.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=development"
   },
+  "bugs": {
+    "url": "https://github.com/xiaoyifan6/midi-view/issues"
+  },
+  "homepage": "https://github.com/xiaoyifan6/midi-view#readme",
   "keywords": [
     "midi",
     "view"
