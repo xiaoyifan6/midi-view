@@ -1,18 +1,8 @@
-require("./views/views");
-require("./base/base");
-require("./base/util");
-require("./base/event");
+import { MusicalInstrumentData, Tone } from "./constant/data";
+import { base } from "./base/base";
+import { event } from "./base/event";
+import { views } from "./views/views";
 
-require("./ui/body");
-require("./ui/header");
-require("./ui/item");
-require("./ui/left");
-require("./ui/ui");
+import { MidiView } from "./main";
 
-require("./constant/data");
-
-require("./dui/body");
-require("./dui/left");
-require("./dui/dui");
-
-module.exports = require("./main");
+export { base, MusicalInstrumentData, Tone, views, event, MidiView };

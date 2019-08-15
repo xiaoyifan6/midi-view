@@ -1,11 +1,21 @@
 {
   "name": "midi-view",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "midi view",
   "main": "build/midi_view.js",
+  "module": "out/midi_view.js",
+  "files": [
+    "build",
+    "dist",
+    "src",
+    "out",
+    "LICENSE.md",
+    "README.md"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode=development"
+    "build": "webpack --mode=development",
+    "buildX": "tsc && webpack --mode=none"
   },
   "bugs": {
     "url": "https://github.com/xiaoyifan6/midi-view/issues"

@@ -41,15 +41,17 @@ export class MidiView {
         this.container.borderColor = "#cccccc";
         this.container.parent = new base.Component();
 
-        this.ui = new UI(this.container);
         this.dui = new DUI(this.container);
+        this.dui.hide();
+
+        this.ui = new UI(this.container);
 
         this.fit()
         this.bind();
 
         // this.ui.visible = false;
         // this.ui.hide();
-        this.dui.hide();
+
     }
 
     public refresh() {
@@ -225,8 +227,10 @@ export class MidiView {
 
     public stop() {
         while (this.synths.length) {
-            const synth = this.synths.shift()
-            synth.dispose()
+            try {
+                const synth = this.synths.shift()
+                synth.dispose()
+            } catch (e) { }
         }
         if (this.intervalIndex) {
             clearInterval(this.intervalIndex);

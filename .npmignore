@@ -1,8 +1,9 @@
 node_modules/
 .DS_Store
-out/
 dist/
 *.png
-*.config.js
 *.html
 docs/
+*.config.js
+src/
+dist/
