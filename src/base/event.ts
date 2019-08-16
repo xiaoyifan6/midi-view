@@ -90,6 +90,13 @@ export namespace event {
             events[type].splice(index, 1);
         }
     }
+
+    export function cancelAll() {
+        for (var key in events) {
+            delete events[key]
+        }
+        events = {}
+    }
 }
 
 // export type EventCbk = (obj: EventObject, cmp: base.Component) => void;

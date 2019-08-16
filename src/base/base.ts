@@ -195,6 +195,12 @@ export namespace base {
 
         }
 
+        public onDestroy() {
+            for (var i = 0; i < this.children.length; i++) {
+                this.children[i] && this.children[i].onDestroy();
+            }
+        }
+
         public onDraw(context: CanvasRenderingContext2D) {
             if (this.parent == null || !this.visible) return;
 

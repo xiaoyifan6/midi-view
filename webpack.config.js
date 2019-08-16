@@ -25,7 +25,7 @@ module.exports = (env, argv) => {
     config.devtool = "inline-source-map";
   } else if (argv.mode === "production") {
   } else if (argv.mode === "none") {
-    config.entry = "./src/midi_view.js";
+    config.entry = "./src/midi_view.ts";
     config.output.filename = "midi_view.js";
     config.output.path = path.resolve(__dirname, "build");
     config.output.libraryTarget = "umd";

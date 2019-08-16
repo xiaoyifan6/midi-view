@@ -6,6 +6,14 @@ import { event } from "./base/event"
 import { clone } from "./base/util"
 import { DUI } from "./dui/dui";
 
+type CbkType = (e) => void
+type ListenerObject = {
+    type: string,
+    cbk: CbkType,
+    thisObj: any
+}
+
+
 export class MidiView {
     private view: HTMLElement;
     private canvas: HTMLCanvasElement;
@@ -21,6 +29,7 @@ export class MidiView {
     private startTime: number = 0;
     private intervalIndex: any;
     public bpm: number = 2;
+    private bindListner: ListenerObject[] = [];
 
     public constructor(view: HTMLElement) {
         this.view = view;
@@ -58,18 +67,27 @@ export class MidiView {
         this.container.onDraw(this.context);
     }
 
-    public bind() {
-        window.addEventListener("resize", this.fit.bind(this));
-        this.canvas.addEventListener("mousedown", this.onDown.bind(this))
-        this.canvas.addEventListener("mousemove", this.onMove.bind(this))
-        this.canvas.addEventListener("mouseup", this.onUp.bind(this))
-        this.canvas.addEventListener("mouseout", this.onUp.bind(this))
-        // this.canvas.addEventListener("scroll", this.onScroll.bind(this))
-        this.canvas.addEventListener("wheel", this.onScroll.bind(this))
-        document.addEventListener("keydown", this.onKeyDown.bind(this));
-        document.addEventListener("keyup", this.onKeyUp.bind(this));
+    protected addEventListener(type: string, cbk: CbkType, _thisObj: any) {
+        if (!_thisObj) return
+        this.bindListner.push({
+            type: type,
+            cbk: cbk,
+            thisObj: _thisObj,
+        })
+        _thisObj.addEventListener(type, cbk)
+    }
 
-        this.canvas.addEventListener("position", this.onPosition.bind(this));
+    public bind() {
+        this.addEventListener("resize", this.fit.bind(this), window);
+        this.addEventListener("mousedown", this.onDown.bind(this), this.canvas)
+        this.addEventListener("mousemove", this.onMove.bind(this), this.canvas)
+        this.addEventListener("mouseup", this.onUp.bind(this), this.canvas)
+        this.addEventListener("mouseout", this.onUp.bind(this), this.canvas)
+        this.addEventListener("wheel", this.onScroll.bind(this), this.canvas)
+        this.addEventListener("keydown", this.onKeyDown.bind(this), document);
+        this.addEventListener("keyup", this.onKeyUp.bind(this), document);
+
+        this.addEventListener("position", this.onPosition.bind(this), this.canvas)
 
         event.bind("refresh", (e: event.EventObject) => {
             this.refresh();
@@ -238,9 +256,7 @@ export class MidiView {
         }
     }
 
-    public async loadFromUrl(url: string) {
-        this.stop();
-        this.data = await Midi.fromUrl(url);
+    private loadData() {
         if (this.data) {
             if (this.data["header"]) {
                 if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
@@ -257,9 +273,33 @@ export class MidiView {
             this.ui.setData(this.data);
             this.dui.setData(this.data);
             this.refresh();
-            console.log(this.data);
+            // console.log(this.data);
         }
-
     }
 
+    public async loadFromUrl(url: string) {
+        this.stop();
+        this.data = await Midi.fromUrl(url);
+        this.loadData();
+    }
+
+    public async loadFromData(bstr: any) {
+        this.data = new Midi(bstr);
+        this.loadData();
+    }
+
+    public destroy() {
+        this.data = undefined
+        event.cancelAll()
+        for (var key in this.bindListner) {
+            try {
+                let obj = this.bindListner[key]
+                obj.thisObj && obj.thisObj.removeEventListener(obj.type, obj.cbk)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        this.bindListner = []
+        this.container && this.container.onDestroy()
+    }
 }

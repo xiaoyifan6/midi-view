@@ -97,4 +97,12 @@ preview:
 ![](./docs/2.png)
 
 
+API:
 
+MidiView
+
+- play
+- stop
+- loadFromUrl
+- loadFromData
+- destroy

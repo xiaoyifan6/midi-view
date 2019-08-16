@@ -1,6 +1,6 @@
 {
   "name": "midi-view",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "midi view",
   "main": "build/midi_view.js",
   "module": "out/midi_view.js",

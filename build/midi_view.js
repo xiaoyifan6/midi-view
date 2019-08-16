@@ -96,40 +96,22 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _constant_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var _constant_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_constant_data__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MusicalInstrumentData", function() { return _constant_data__WEBPACK_IMPORTED_MODULE_0__["MusicalInstrumentData"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Tone", function() { return _constant_data__WEBPACK_IMPORTED_MODULE_0__["Tone"]; });
-
-/* harmony import */ var _base_base__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
-/* harmony import */ var _base_base__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_base_base__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "base", function() { return _base_base__WEBPACK_IMPORTED_MODULE_1__["base"]; });
-
-/* harmony import */ var _base_event__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3);
-/* harmony import */ var _base_event__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_base_event__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "event", function() { return _base_event__WEBPACK_IMPORTED_MODULE_2__["event"]; });
-
-/* harmony import */ var _views_views__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
-/* harmony import */ var _views_views__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_views_views__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "views", function() { return _views_views__WEBPACK_IMPORTED_MODULE_3__["views"]; });
-
-/* harmony import */ var _main__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9);
-/* harmony import */ var _main__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_main__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MidiView", function() { return _main__WEBPACK_IMPORTED_MODULE_4__["MidiView"]; });
-
-
-
-
-
-
-
-
-
+Object.defineProperty(exports, "__esModule", { value: true });
+var data_1 = __webpack_require__(1);
+exports.MusicalInstrumentData = data_1.MusicalInstrumentData;
+exports.Tone = data_1.Tone;
+var base_1 = __webpack_require__(2);
+exports.base = base_1.base;
+var event_1 = __webpack_require__(3);
+exports.event = event_1.event;
+var views_1 = __webpack_require__(4);
+exports.views = views_1.views;
+var main_1 = __webpack_require__(9);
+exports.MidiView = main_1.MidiView;
 
 
 /***/ }),
@@ -660,6 +642,11 @@ var base;
         };
         Component.prototype.onDettach = function () {
         };
+        Component.prototype.onDestroy = function () {
+            for (var i = 0; i < this.children.length; i++) {
+                this.children[i] && this.children[i].onDestroy();
+            }
+        };
         Component.prototype.onDraw = function (context) {
             if (this.parent == null || !this.visible)
                 return;
@@ -808,6 +795,13 @@ var event;
         }
     }
     event.cancel = cancel;
+    function cancelAll() {
+        for (var key in events) {
+            delete events[key];
+        }
+        events = {};
+    }
+    event.cancelAll = cancelAll;
 })(event = exports.event || (exports.event = {}));
 
 
@@ -1151,6 +1145,7 @@ var MidiView = (function () {
         this.synths = [];
         this.startTime = 0;
         this.bpm = 2;
+        this.bindListner = [];
         this.view = view;
         this.canvas = this.view.querySelector("canvas");
         if (!this.canvas) {
@@ -1177,17 +1172,27 @@ var MidiView = (function () {
     MidiView.prototype.refresh = function () {
         this.container.onDraw(this.context);
     };
+    MidiView.prototype.addEventListener = function (type, cbk, _thisObj) {
+        if (!_thisObj)
+            return;
+        this.bindListner.push({
+            type: type,
+            cbk: cbk,
+            thisObj: _thisObj,
+        });
+        _thisObj.addEventListener(type, cbk);
+    };
     MidiView.prototype.bind = function () {
         var _this = this;
-        window.addEventListener("resize", this.fit.bind(this));
-        this.canvas.addEventListener("mousedown", this.onDown.bind(this));
-        this.canvas.addEventListener("mousemove", this.onMove.bind(this));
-        this.canvas.addEventListener("mouseup", this.onUp.bind(this));
-        this.canvas.addEventListener("mouseout", this.onUp.bind(this));
-        this.canvas.addEventListener("wheel", this.onScroll.bind(this));
-        document.addEventListener("keydown", this.onKeyDown.bind(this));
-        document.addEventListener("keyup", this.onKeyUp.bind(this));
-        this.canvas.addEventListener("position", this.onPosition.bind(this));
+        this.addEventListener("resize", this.fit.bind(this), window);
+        this.addEventListener("mousedown", this.onDown.bind(this), this.canvas);
+        this.addEventListener("mousemove", this.onMove.bind(this), this.canvas);
+        this.addEventListener("mouseup", this.onUp.bind(this), this.canvas);
+        this.addEventListener("mouseout", this.onUp.bind(this), this.canvas);
+        this.addEventListener("wheel", this.onScroll.bind(this), this.canvas);
+        this.addEventListener("keydown", this.onKeyDown.bind(this), document);
+        this.addEventListener("keyup", this.onKeyUp.bind(this), document);
+        this.addEventListener("position", this.onPosition.bind(this), this.canvas);
         event_1.event.bind("refresh", function (e) {
             _this.refresh();
         }, this);
@@ -1352,6 +1357,25 @@ var MidiView = (function () {
             this.intervalIndex = undefined;
         }
     };
+    MidiView.prototype.loadData = function () {
+        if (this.data) {
+            if (this.data["header"]) {
+                if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+                    Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
+                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+                }
+                else {
+                    Tone.Transport.bpm.value = 120;
+                }
+                if (this.data["header"]["ppq"]) {
+                    Tone.Transport.PPQ = this.data["header"]["ppq"];
+                }
+            }
+            this.ui.setData(this.data);
+            this.dui.setData(this.data);
+            this.refresh();
+        }
+    };
     MidiView.prototype.loadFromUrl = function (url) {
         return __awaiter(this, void 0, void 0, function () {
             var _a;
@@ -1363,28 +1387,35 @@ var MidiView = (function () {
                         return [4, Midi.fromUrl(url)];
                     case 1:
                         _a.data = _b.sent();
-                        if (this.data) {
-                            if (this.data["header"]) {
-                                if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-                                    Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
-                                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
-                                }
-                                else {
-                                    Tone.Transport.bpm.value = 120;
-                                }
-                                if (this.data["header"]["ppq"]) {
-                                    Tone.Transport.PPQ = this.data["header"]["ppq"];
-                                }
-                            }
-                            this.ui.setData(this.data);
-                            this.dui.setData(this.data);
-                            this.refresh();
-                            console.log(this.data);
-                        }
+                        this.loadData();
                         return [2];
                 }
             });
         });
+    };
+    MidiView.prototype.loadFromData = function (bstr) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.data = new Midi(bstr);
+                this.loadData();
+                return [2];
+            });
+        });
+    };
+    MidiView.prototype.destroy = function () {
+        this.data = undefined;
+        event_1.event.cancelAll();
+        for (var key in this.bindListner) {
+            try {
+                var obj = this.bindListner[key];
+                obj.thisObj && obj.thisObj.removeEventListener(obj.type, obj.cbk);
+            }
+            catch (e) {
+                console.error(e);
+            }
+        }
+        this.bindListner = [];
+        this.container && this.container.onDestroy();
     };
     return MidiView;
 }());
