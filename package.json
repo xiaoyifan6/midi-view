@@ -17,6 +17,10 @@
     "build": "webpack --mode=development",
     "buildX": "tsc && webpack --mode=none"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaoyifan6/midi-view.git"
+  },
   "bugs": {
     "url": "https://github.com/xiaoyifan6/midi-view/issues"
   },
