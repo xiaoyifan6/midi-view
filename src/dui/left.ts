@@ -1,6 +1,7 @@
 import { base } from "../base/base"
 import { Tone } from "../constant/data"
 import { event } from "../base/event";
+import { Style } from "../constant/theme";
 
 type HitArea = {
     rect: base.Rect,
@@ -15,6 +16,7 @@ export class Left extends base.Component {
     public whiteColor = "#ffffff";
 
     public keyColor: string = "#ff0000";
+    public indexColor: string = "#ff0000";
     private selectKey: { [key: string]: boolean } = {};
 
     public rects: HitArea[] = [];
@@ -22,6 +24,24 @@ export class Left extends base.Component {
     protected init() {
         super.init();
         this.borderColor = "#666666";
+    }
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.blackColor) {
+            this.blackColor = style.blackColor;
+        }
+        if (style.whiteColor) {
+            this.whiteColor = style.whiteColor;
+        }
+        if (style.hitColor) {
+            this.keyColor = style.hitColor;
+            this.indexColor = style.hitColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
     }
 
     public onDraw(context: CanvasRenderingContext2D) {
@@ -82,7 +102,7 @@ export class Left extends base.Component {
             if (y > box.bottom) break;
             let t = Tone[yarr[i].i];
             if (this.selectKey[t]) {
-                context.fillStyle = this.keyColor;
+                context.fillStyle = this.indexColor;
             } else {
                 context.fillStyle = this.blackColor;
             }

@@ -1,6 +1,7 @@
 import { base } from "../base/base"
 import { ListView, HeadInfoItem } from "./item";
 import { config } from "../constant/config"
+import { Style } from "../constant/theme";
 
 export class Left extends base.Component {
     public lineWidth: number = 0.4;
@@ -12,6 +13,14 @@ export class Left extends base.Component {
         this.borderWith = 0;
         this.listView = new ListView(this, [], config.ui.left.listView.itemHeight)
             .cbk(() => new HeadInfoItem());
+    }
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
     }
 
     public setData(data: Array<any>) {

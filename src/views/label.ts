@@ -1,5 +1,6 @@
 import { base } from "../base/base"
 import { config } from "../constant/config"
+import { Style } from "../constant/theme"
 
 export class Label extends base.Component {
     private _text: string = "";
@@ -15,6 +16,15 @@ export class Label extends base.Component {
 
     public get text(): string {
         return this._text;
+    }
+
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
     }
 
     public onDraw(context: CanvasRenderingContext2D) {

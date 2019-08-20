@@ -1,5 +1,7 @@
 import { config } from "../constant/config"
 import { drawRoundRect } from "./util"
+import { Style, Theme } from "../constant/theme"
+
 
 export namespace base {
     export class Point {
@@ -140,6 +142,13 @@ export namespace base {
             this.init();
         }
 
+        public setStyle(style: Style) {
+            if (!style) return;
+
+            this.borderColor = style.borderColor;
+            this.bgColor = style.bgColor;
+        }
+
         public release() {
             this.active = false;
         }
@@ -250,9 +259,11 @@ export namespace base {
 
         protected container: Component;
         protected data: any;
+        protected theme: Theme;
 
-        public constructor(container: Component) {
+        public constructor(container: Component, theme: Theme) {
             this.container = container;
+            this.theme = theme;
         }
 
         public addChild(cmp: Component) {
@@ -284,6 +295,10 @@ export namespace base {
 
         public get height(): number {
             return this.container.height;
+        }
+
+        public setTheme(theme: Theme) {
+            this.theme = theme;
         }
 
         public hide() {

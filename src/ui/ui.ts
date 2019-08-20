@@ -3,6 +3,8 @@ import { Header } from "./header"
 import { Body } from "./body"
 import { Left } from "./left";
 import { event } from "../base/event"
+import { config } from "../constant/config";
+import { Style, Theme } from "../constant/theme";
 
 export class UI extends base.BaseUI {
     public hearder: Header;
@@ -12,8 +14,8 @@ export class UI extends base.BaseUI {
     private headHeight: number;
     private leftWidth: number;
 
-    public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 80) {
-        super(container);
+    public constructor(container: base.Component, theme: Theme, headHeight: number = config.ui.headHeight, leftWidth: number = config.ui.leftWidth) {
+        super(container, theme);
         this.headHeight = headHeight;
         this.leftWidth = leftWidth;
 
@@ -21,15 +23,17 @@ export class UI extends base.BaseUI {
         this.left = new Left(0, headHeight, leftWidth, container.height - headHeight);
         this.body = new Body(leftWidth, headHeight, container.width - leftWidth, container.height - headHeight);
 
-        this.hearder.borderWith = 1;
+        this.hearder.borderWith = config.ui.hearder.borderWith;
         this.hearder.dw = this.body.dw;
-        this.left.borderWith = 1;
+        this.left.borderWith = config.ui.left.borderWith;
         this.body.borderWith = 0;
 
         container.addChild(this.body);
         container.addChild(this.hearder);
         container.addChild(this.left);
         this.bind();
+
+        this.setTheme(theme);
     }
 
     public bind() {
@@ -103,9 +107,9 @@ export class UI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = 2;
+        var bpm = config.DEFAULT_BMP;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
         }
 
         this.body.bpm = bpm;
@@ -151,5 +155,15 @@ export class UI extends base.BaseUI {
         this.body.visible = true;
         this.hearder.visible = true;
         this.left.visible = true;
+    }
+
+    public setTheme(theme: Theme) {
+        super.setTheme(theme);
+
+        this.body.setStyle(theme.ui.body);
+        this.left.setStyle(theme.ui.left);
+        this.hearder.setStyle(theme.ui.header);
+        this.body.listView.setStyle(theme.ui.body.item);
+        this.left.listView.setStyle(theme.ui.left.item);
     }
 }

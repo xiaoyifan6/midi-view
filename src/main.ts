@@ -6,7 +6,8 @@ import { event } from "./base/event"
 import { clone } from "./base/util"
 import { DUI } from "./dui/dui";
 
-import { config } from "./constant/config"
+import { config } from "./constant/config";
+import { theme, ThemeConfig } from "./constant/theme";
 
 type CbkType = (e) => void
 type ListenerObject = {
@@ -33,7 +34,7 @@ export class MidiView {
     public bpm: number = 2;
     private bindListner: ListenerObject[] = [];
 
-    public constructor(view: HTMLElement) {
+    public constructor(view: HTMLElement, key?: string) {
         this.view = view;
         this.canvas = <HTMLCanvasElement>this.view.querySelector("canvas");
         if (!this.canvas) {
@@ -52,17 +53,33 @@ export class MidiView {
         this.container.borderColor = "#cccccc";
         this.container.parent = new base.Component();
 
-        this.dui = new DUI(this.container);
+        if (key && ThemeConfig[key]) {
+            theme.cur = ThemeConfig[key];
+        }
+
+        this.dui = new DUI(this.container, theme.cur);
         this.dui.hide();
 
-        this.ui = new UI(this.container);
+        this.ui = new UI(this.container, theme.cur);
 
         this.fit()
         this.bind();
 
+        this.container.setStyle(theme.cur.style);
+
         // this.ui.visible = false;
         // this.ui.hide();
 
+    }
+
+    public setTheme(key: string) {
+        if (ThemeConfig[key]) {
+            theme.cur = ThemeConfig[key];
+            this.container.setStyle(theme.cur.style);
+            this.ui.setTheme(theme.cur);
+            this.dui.setTheme(theme.cur);
+            this.refresh();
+        }
     }
 
     public refresh() {

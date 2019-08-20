@@ -1,6 +1,7 @@
 import { Label } from "./label"
 import { event } from "../base/event"
 import { config } from "../constant/config"
+import { Style } from "../constant/theme"
 
 export class Button extends Label {
     public offsetX: number = config.BUTTON_OFFSET_X;

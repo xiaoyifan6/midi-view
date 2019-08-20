@@ -39,6 +39,12 @@
     <canvas></canvas>
   </div>
   <select id="midi-select"> </select>
+  <select id="theme-select" value="default">
+    <option value="default">default</option>
+    <option value="light">light</option>
+    <option value="black">black</option>
+    <option value="blue">blue</option>
+  </select>
   <button id="btn_paly">播放</button>
   <script src="main.js"></script>
   <script>
@@ -86,6 +92,11 @@
 
       selectItem = files[0];
       loadMidiFile(`./midi/${selectItem}`);
+
+
+      document.querySelector("#theme-select").addEventListener("change", v => {
+        v.target && view.setTheme(v.target.value);
+      });
     }
 
     initSelect()

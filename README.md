@@ -63,6 +63,7 @@ const midiview = require("midi-view")
 var playing = false;
 var view = document.querySelector("#midi-view")
 view = new midiview.MidiView(view)
+// view = new midiview.MidiView(view , "light") // default black white blue
 
 var btn = document.querySelector("#btn_paly");
 
@@ -106,7 +107,7 @@ MidiView
 - loadFromUrl
 - loadFromData
 - destroy
-
+- setTheme: default,black,blue,light
 
 wheel:
 

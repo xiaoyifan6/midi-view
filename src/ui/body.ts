@@ -1,6 +1,7 @@
 import { base } from "../base/base"
 import { ListView, MidiItem } from "./item";
 import { config } from "../constant/config";
+import { Style } from "../constant/theme";
 
 export class Body extends base.Component {
     public dw: number = config.ui.body.dw;
@@ -14,6 +15,7 @@ export class Body extends base.Component {
     public lineWidth: number = config.ui.body.lineWidth;
     public lineColor: string = "#000000";
     public barColor: string = "#000000";
+    public bgBarColor: string = "#ffffff";
 
     public indexColor: string = "#ff0000";
     public indexWidth: number = config.ui.body.indexWidth;
@@ -68,6 +70,27 @@ export class Body extends base.Component {
         return (this.width - this.scrollBarWidth) / this.scrollWidth;
     }
 
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+
+        if (style.bgBarColor) {
+            this.bgBarColor = style.bgBarColor;
+        }
+
+        if (style.barColor) {
+            this.barColor = style.barColor;
+        }
+
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
+
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+    }
+
     public setData(data: Array<any>) {
         this.listView.setData(data);
         this.listView.offsetY = 0;
@@ -111,6 +134,8 @@ export class Body extends base.Component {
         context.stroke();
 
         if (this.height < this.contentHeight) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top, config.DEFAULT_BAR_WIDTH, box.height * box.sy)
             context.beginPath();
             context.strokeStyle = this.barColor;
             context.strokeRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top, config.DEFAULT_BAR_WIDTH, box.height * box.sy)
@@ -120,6 +145,8 @@ export class Body extends base.Component {
         }
 
         if (this.width < this.contentWidth) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, box.width * box.sx, config.DEFAULT_BAR_WIDTH)
             context.beginPath();
             context.strokeStyle = this.barColor;
             context.strokeRect(box.left, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, box.width * box.sx, config.DEFAULT_BAR_WIDTH)

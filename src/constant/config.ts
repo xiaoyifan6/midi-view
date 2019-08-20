@@ -1,4 +1,4 @@
-import { Color } from "./color"
+import { Color } from "./color";
 
 export var config = {
     DEFAULT_BG_COLOR: Color.WHITE,
@@ -26,12 +26,14 @@ export var config = {
         hearder: {
             dw: 8,
             bate: 4,
+            borderWith: 1,
             lineWidth: 0.4,
             indexWidth: 0.5,
             textWidth: 0.6,
         },
         left: {
             lineWidth: 0.4,
+            borderWith: 1,
             listView: {
                 itemHeight: 60,
                 item: {
@@ -49,6 +51,9 @@ export var config = {
                 height: 60,
                 scrollBarWidth: 0,
                 itemHeight: 60,
+                item: {
+                    textWidth: 0.5,
+                }
             }
         }
     },
@@ -72,7 +77,7 @@ export var config = {
             dh: 8,
             dw: 40,
             indexWidth: 0.5,
-            lineWidth: 1,
+            lineWidth: 0.5,
             paddingRight: 10,
         },
         closeBtn: {
@@ -85,3 +90,4 @@ export var config = {
         }
     }
 }
+

@@ -6,6 +6,7 @@ import { Body } from "./body";
 import { event } from "../base/event";
 import { views } from "../views/views";
 import { config } from "../constant/config";
+import { Style, Theme } from "../constant/theme";
 
 export class DUI extends base.BaseUI {
     private headHeight: number;
@@ -18,8 +19,8 @@ export class DUI extends base.BaseUI {
     private closeBtn: base.Component;
 
 
-    public constructor(container: base.Component, headHeight: number = config.dui.headHeight, leftWidth: number = config.dui.leftWidth) {
-        super(container);
+    public constructor(container: base.Component, theme: Theme, headHeight: number = config.dui.headHeight, leftWidth: number = config.dui.leftWidth) {
+        super(container, theme);
         this.headHeight = headHeight;
         this.leftWidth = leftWidth;
 
@@ -49,6 +50,8 @@ export class DUI extends base.BaseUI {
         container.addChild(this.closeBtn);
 
         this.bind();
+
+        this.setTheme(theme);
     }
 
     public bind() {
@@ -208,4 +211,11 @@ export class DUI extends base.BaseUI {
         this.hearder.position = this.body.position;
     }
 
+    public setTheme(theme: Theme) {
+        super.setTheme(theme);
+        this.body.setStyle(theme.dui.body);
+        this.left.setStyle(theme.dui.left);
+        this.hearder.setStyle(theme.dui.header);
+        this.closeBtn.setStyle(theme.dui.closeBtn);
+    }
 }

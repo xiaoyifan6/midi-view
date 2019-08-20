@@ -1,8 +1,8 @@
 import { base } from "../base/base"
 import { Tone, MusicalInstrumentData } from "../constant/data"
 import { event } from "../base/event";
-import { Switch } from "../views/switch"
 import { config } from "../constant/config";
+import { Style } from "../constant/theme";
 
 export class Item extends base.Component {
     protected data: any;
@@ -40,12 +40,19 @@ export class ListView {
     public views: Array<Item> = []
     private createItemCbk?: () => Item;
     public scrollBarWidth: number = 0;
+    public style?: Style;
 
     public constructor(container: base.Component, data: Array<any>, height: number) {
         this.data = data || [];
         this.itemHeight = height;
         this.container = container;
         this.refresh();
+    }
+
+    public setStyle(style: Style) {
+        if (style) {
+            this.style = style;
+        }
     }
 
     public setData(data: Array<any>) {
@@ -78,6 +85,9 @@ export class ListView {
             if (this.container.height < this.contentHeight) {
                 sw = this.scrollBarWidth;
             }
+            if (this.style) {
+                item.setStyle(this.style);
+            }
             item.set(0, this.offsetY + i * this.itemHeight, this.container.width - sw, this.itemHeight);
             item["offsetX"] = this.offsetX;
         }
@@ -105,11 +115,24 @@ export class MidiItem extends Item {
     public offsetX: number = 0;
     public lineColor: string = "#000000";
     public lineWidth: number = 2;
+    public textWidth: number = config.ui.body.listView.item.textWidth;
+    public textColor: string = "#000000";
 
     public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 60) {
         super(x, y, width, height);
         this.borderWith = 1;
         this.borderColor = "#666666";
+    }
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
     }
 
     public onDraw(context: CanvasRenderingContext2D) {
@@ -122,9 +145,9 @@ export class MidiItem extends Item {
 
         var eh = box.height / Tone.length;
 
-        context.strokeStyle = "#00ff00"; // dark
+        context.strokeStyle = this.textColor; // dark
 
-        context.lineWidth = 0.5;
+        context.lineWidth = this.textWidth;
         context.font = "14px";
         // instrument
         var s = (this.data["instrument"] || {})["number"] || "" + "";
@@ -174,6 +197,14 @@ export class HeadInfoItem extends Item {
         super(x, y, width, height);
         this.borderWith = 1;
         this.borderColor = "#aaaaaa";
+    }
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
     }
 
     public onDraw(context: CanvasRenderingContext2D) {

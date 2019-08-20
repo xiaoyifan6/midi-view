@@ -1,5 +1,6 @@
 import { base } from "../base/base";
 import { config } from "../constant/config";
+import { Style } from "../constant/theme";
 
 export class Header extends base.Component {
     public dw: number = config.ui.hearder.dw;
@@ -14,6 +15,21 @@ export class Header extends base.Component {
 
     public indexColor: string = "#ff0000";
     public indexWidth: number = config.ui.hearder.indexWidth;
+
+
+    public setStyle(style: Style) {
+        super.setStyle(style);
+        if (!style) return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
+    }
 
     public onDraw(context: CanvasRenderingContext2D) {
         super.onDraw(context);
