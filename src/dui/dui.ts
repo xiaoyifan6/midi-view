@@ -5,6 +5,7 @@ import { Header } from "../ui/header";
 import { Body } from "./body";
 import { event } from "../base/event";
 import { views } from "../views/views";
+import { config } from "../constant/config";
 
 export class DUI extends base.BaseUI {
     private headHeight: number;
@@ -17,7 +18,7 @@ export class DUI extends base.BaseUI {
     private closeBtn: base.Component;
 
 
-    public constructor(container: base.Component, headHeight: number = 40, leftWidth: number = 70) {
+    public constructor(container: base.Component, headHeight: number = config.dui.headHeight, leftWidth: number = config.dui.leftWidth) {
         super(container);
         this.headHeight = headHeight;
         this.leftWidth = leftWidth;
@@ -26,19 +27,20 @@ export class DUI extends base.BaseUI {
         this.body.borderWith = 0;
 
         this.left = new Left(0, this.headHeight, this.leftWidth, this.container.height - this.headHeight);
-        this.left.borderWith = 1;
-        this.left.lineWidth = 1;
+        this.left.borderWith = config.dui.left.borderWith;
+        this.left.lineWidth = config.dui.left.lineWidth;
 
         this.hearder = new Header(leftWidth, 0, container.width - leftWidth, headHeight);
-        this.hearder.borderWith = 1;
+        this.hearder.borderWith = config.dui.hearder.borderWith;
 
-        this.hearder.dw = this.body.dw = 40;
+        this.hearder.dw = this.body.dw = config.dui.body.dw;
         // this.left.dh = this.body.dh * 3 / 2;
         this.left.dh = this.body.dh * 82 / 48;
 
-        var closeBtn = new views.Button(10, 10, 40, 20);
+        var closeBtn = new views.Button(config.dui.closeBtn.x, config.dui.closeBtn.y, config.dui.closeBtn.width, config.dui.closeBtn.height);
         closeBtn.text = "关 闭";
-        closeBtn.borderWith = 0.4;
+        closeBtn.borderWith = config.dui.closeBtn.borderWith;
+        closeBtn.radius = config.dui.closeBtn.radius;
         this.closeBtn = closeBtn;
 
         container.addChild(this.hearder);
@@ -110,7 +112,7 @@ export class DUI extends base.BaseUI {
             if (eobj.target !== self.body) return;
             var note = self.body.hit(eobj.data.x, eobj.data.y);
             if (note && self.synth) {
-                const now = Tone.now() + 0.1
+                const now = Tone.now() + config.dui.toneDelay;
                 self.left.hitKey(note.name, note.duration * 1000);
                 self.synth.triggerAttackRelease(note.name, note.duration, now, note.velocity)
             }
@@ -121,7 +123,7 @@ export class DUI extends base.BaseUI {
             if (eobj.target !== self.left) return;
             var name = self.left.hit(eobj.data.x, eobj.data.y);
             if (name && self.synth) {
-                const now = Tone.now() + 0.1
+                const now = Tone.now() + config.dui.toneDelay;
                 self.synth.triggerAttackRelease(name, 0.4, now)
             }
         }
@@ -173,9 +175,9 @@ export class DUI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = 2;
+        var bpm = config.DEFAULT_BMP;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
         }
 
         this.body.bpm = bpm;
@@ -185,7 +187,7 @@ export class DUI extends base.BaseUI {
         this.body.setData(this.data.tracks[0].notes)
         console.log(this.data.tracks[0].notes)
         // this.left.setData(this.data.tracks)
-        this.hearder.dw = this.body.dw = 40;
+        this.hearder.dw = this.body.dw = config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -194,7 +196,7 @@ export class DUI extends base.BaseUI {
 
     public setNodesData(data: any) {
         this.body.setData(data);
-        this.hearder.dw = this.body.dw = 40;
+        this.hearder.dw = this.body.dw = config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;

@@ -1,5 +1,6 @@
 import { base } from "../base/base"
 import { ListView, HeadInfoItem } from "./item";
+import { config } from "../constant/config"
 
 export class Left extends base.Component {
     public lineWidth: number = 0.4;
@@ -9,7 +10,7 @@ export class Left extends base.Component {
     public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
         super(x, y, width, height);
         this.borderWith = 0;
-        this.listView = new ListView(this, [], 60)
+        this.listView = new ListView(this, [], config.ui.left.listView.itemHeight)
             .cbk(() => new HeadInfoItem());
     }
 

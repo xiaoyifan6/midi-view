@@ -1,3 +1,6 @@
+import { config } from "../constant/config"
+import { drawRoundRect } from "./util"
+
 export namespace base {
     export class Point {
         public x: number;
@@ -118,17 +121,18 @@ export namespace base {
 
     export class Component extends Rect {
         public children: Array<Component> = [];
-        public bgColor: string = "#ffffff";
+        public bgColor: string = config.DEFAULT_BG_COLOR;
         public scaleX: number = 1;
         public scaleY: number = 1;
+        public radius: number = 0;
         public parent?: Component;
         public overflow: boolean = false; // 是否允许溢出
         public active: boolean = false;
         public visible: boolean = true;
         public box: Box;
 
-        public borderWith: number = 0;
-        public borderColor: string = "#000000";
+        public borderWith: number = config.DEFAULT_BORDER_WIDTH;
+        public borderColor: string = config.DEFAULT_BORDER_COLOR;
 
         public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
             super(x, y, width, height);
@@ -215,7 +219,11 @@ export namespace base {
                 context.clip();
             }
 
-            context.fillRect(box.left, box.top, box.width, box.height);
+            if (this.radius === 0) {
+                context.fillRect(box.left, box.top, box.width, box.height);
+            } else {
+                drawRoundRect(context, box.left, box.top, box.width, box.height, this.radius);
+            }
 
             for (var i = 0; i < this.children.length; i++) {
                 context.save();
@@ -227,7 +235,11 @@ export namespace base {
                 context.beginPath();
                 context.lineWidth = this.borderWith;
                 context.strokeStyle = this.borderColor;
-                context.strokeRect(box.left, box.top, box.width, box.height);
+                if (this.radius === 0) {
+                    context.strokeRect(box.left, box.top, box.width, box.height);
+                } else {
+                    drawRoundRect(context, box.left, box.top, box.width, box.height, this.radius);
+                }
                 context.stroke();
             }
         }

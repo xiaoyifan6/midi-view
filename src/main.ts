@@ -6,6 +6,8 @@ import { event } from "./base/event"
 import { clone } from "./base/util"
 import { DUI } from "./dui/dui";
 
+import { config } from "./constant/config"
+
 type CbkType = (e) => void
 type ListenerObject = {
     type: string,
@@ -46,7 +48,7 @@ export class MidiView {
             throw "unsupport canvas 2d"
         }
         this.container = new base.Component();
-        this.container.borderWith = 2;
+        this.container.borderWith = config.DEFAULT_BMP;
         this.container.borderColor = "#cccccc";
         this.container.parent = new base.Component();
 
@@ -152,7 +154,7 @@ export class MidiView {
 
     public onScroll(e: Event) {
         e = e || window.event;
-        var detail = (e["wheelDelta"] || e["detail"] || 0) * 0.1;
+        var detail = (e["wheelDelta"] || e["detail"] || 0) * config.WHELL_RATE;
         if (this.keysMap["ALT"]) {
             this.eobj.detailX = detail;
             this.eobj.detailY = 0;
@@ -215,7 +217,7 @@ export class MidiView {
         this.stop();
         var self = this;
 
-        const now = Tone.now() + 0.5
+        const now = Tone.now() + config.TONE_DELAY
         this.startTime = now;
         this.synths = [];
         for (var i = 0; i < this.data.tracks.length; i++) {
@@ -240,7 +242,7 @@ export class MidiView {
             self.ui.position = (Tone.now() - self.startTime) * this.bpm;
             self.dui.position = (Tone.now() - self.startTime) * this.bpm;
             self.refresh();
-        }, 100);
+        }, config.REFRESH_INTERVAL);
     }
 
     public stop() {
@@ -261,9 +263,9 @@ export class MidiView {
             if (this.data["header"]) {
                 if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
                     Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
-                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
                 } else {
-                    Tone.Transport.bpm.value = 120;
+                    Tone.Transport.bpm.value = config.DEFAULT_TEMPOS;
                 }
                 if (this.data["header"]["ppq"]) {
                     Tone.Transport.PPQ = this.data["header"]["ppq"];

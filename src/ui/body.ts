@@ -1,21 +1,22 @@
 import { base } from "../base/base"
 import { ListView, MidiItem } from "./item";
+import { config } from "../constant/config";
 
 export class Body extends base.Component {
-    public dw: number = 8;
-    private paddingRight = 40;
+    public dw: number = config.ui.body.dw;
+    private paddingRight = config.ui.body.paddingRight;
     // public dw2: number = 60;
 
     public offsetX: number = 0;
-    public bate: number = 4;
+    public bate: number = config.ui.body.bate;
     public bpm: number = 0;
     public position: number = 0;
-    public lineWidth: number = 0.4;
+    public lineWidth: number = config.ui.body.lineWidth;
     public lineColor: string = "#000000";
     public barColor: string = "#000000";
 
     public indexColor: string = "#ff0000";
-    public indexWidth: number = 0.5;
+    public indexWidth: number = config.ui.body.indexWidth;
 
     public listView: ListView;
 
@@ -24,14 +25,14 @@ export class Body extends base.Component {
     public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
         super(x, y, width, height);
         this.borderWith = 0;
-        this.listView = new ListView(this, [], 60)
+        this.listView = new ListView(this, [], config.ui.body.listView.itemHeight)
             .cbk(() => {
                 var item = new MidiItem();
                 // item.dw = this.dw2;
                 item.dw = this.dw * this.bpm;
                 return item;
             });
-        this.listView.scrollBarWidth = 4;
+        this.listView.scrollBarWidth = config.ui.body.listView.scrollBarWidth;
     }
 
     public get contentHeight(): number {
@@ -73,7 +74,7 @@ export class Body extends base.Component {
         this.listView.offsetX = 0;
         this.offsetX = 0;
         this.position = 0;
-        this.dw = 8;
+        this.dw = config.ui.body.dw;
         this.listView.refresh();
     }
 
@@ -111,17 +112,20 @@ export class Body extends base.Component {
 
         if (this.height < this.contentHeight) {
             context.beginPath();
+            context.strokeStyle = this.barColor;
+            context.strokeRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top, config.DEFAULT_BAR_WIDTH, box.height * box.sy)
+            context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(box.left + box.width * box.sx - 4, box.top - this.listView.offsetY * this.scrollSpeedY * box.sy, 4, this.scrollBarHeight * box.sy);
+            context.fillRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top - this.listView.offsetY * this.scrollSpeedY * box.sy, config.DEFAULT_BAR_WIDTH, this.scrollBarHeight * box.sy);
         }
 
         if (this.width < this.contentWidth) {
             context.beginPath();
             context.strokeStyle = this.barColor;
-            context.strokeRect(box.left, box.top + box.height * box.sy - 4, box.width * box.sx, 4)
+            context.strokeRect(box.left, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, box.width * box.sx, config.DEFAULT_BAR_WIDTH)
             context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(box.left - this.listView.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - 4, this.scrollBarWidth * box.sx, 4);
+            context.fillRect(box.left - this.listView.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config.DEFAULT_BAR_WIDTH);
         }
     }
 }

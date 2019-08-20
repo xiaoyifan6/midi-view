@@ -1,16 +1,17 @@
-import { base } from "../base/base"
-import { Tone } from "../constant/data"
+import { base } from "../base/base";
+import { Tone } from "../constant/data";
+import { config } from "../constant/config";
 
 export class Body extends base.Component {
-    public dh: number = 8;
-    public dw: number = 8;
+    public dh: number = config.dui.body.dh;
+    public dw: number = config.dui.body.dw;
     public lineColor: string = "#cccccc";
-    public lineWidth: number = 1;
+    public lineWidth: number = config.dui.body.lineWidth;
     public barColor: string = "#000000";
     public hitColor: string = "#ff0000";
 
     public indexColor: string = "#ff0000";
-    public indexWidth: number = 0.5;
+    public indexWidth: number = config.dui.body.indexWidth;
     private rects: base.Rect[] = [];
 
     public offsetX: number = 0;
@@ -19,7 +20,7 @@ export class Body extends base.Component {
     public duration: number = 0;
     public bpm: number = 0;
     public position: number = 0;
-    private paddingRight = 10;
+    private paddingRight = config.dui.body.paddingRight;
     private hitIndex: number = -1;
 
     public setData(nodes: any[]) {
@@ -28,7 +29,7 @@ export class Body extends base.Component {
         this.offsetX = 0;
         this.offsetY = 0;
         this.position = 0;
-        this.dw = 8;
+        this.dw = config.dui.body.dw;
         this.hitIndex = -1;
     }
 
@@ -98,19 +99,19 @@ export class Body extends base.Component {
         if (this.height < this.contentHeight) {
             context.beginPath();
             context.strokeStyle = this.barColor;
-            context.strokeRect(box.left + box.width * box.sx - 4, box.top, 4, box.height * box.sy)
+            context.strokeRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top, config.DEFAULT_BAR_WIDTH, box.height * box.sy)
             context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(box.left + box.width * box.sx - 4, box.top - this.offsetY * this.scrollSpeedY * box.sy, 4, this.scrollBarHeight * box.sy);
+            context.fillRect(box.left + box.width * box.sx - config.DEFAULT_BAR_WIDTH, box.top - this.offsetY * this.scrollSpeedY * box.sy, config.DEFAULT_BAR_WIDTH, this.scrollBarHeight * box.sy);
         }
 
         if (this.width < this.contentWidth) {
             context.beginPath();
             context.strokeStyle = this.barColor;
-            context.strokeRect(box.left, box.top + box.height * box.sy - 4, box.width * box.sx, 4)
+            context.strokeRect(box.left, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, box.width * box.sx, config.DEFAULT_BAR_WIDTH)
             context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - 4, this.scrollBarWidth * box.sx, 4);
+            context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config.DEFAULT_BAR_WIDTH);
         }
 
 

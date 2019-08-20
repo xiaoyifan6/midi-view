@@ -1,11 +1,12 @@
 import { base } from "../base/base"
+import { config } from "../constant/config"
 
 export class Label extends base.Component {
     private _text: string = "";
     public textColor: string = "#000000";
-    public font: string = "14px";
+    public font: string = config.LABEL_FONT_SIZE + "px";
     public maxWidth?: number;
-    public lineHeight: number = 20;
+    public lineHeight: number = config.LABEL_LINEHEIGHT;
     public multyLine: boolean = false;
 
     public set text(_text: string) {
@@ -37,7 +38,7 @@ export class Label extends base.Component {
                 }
             }
         } else {
-            context.strokeText(this._text, box.left + (box.width - m.width) / 2, box.top + box.height / 2 + 14 / 4);
+            context.strokeText(this._text, box.left + (box.width - m.width) / 2, box.top + box.height / 2 + config.LABEL_FONT_SIZE / 4);
         }
         context.stroke();
     }

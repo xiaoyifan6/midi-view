@@ -1,9 +1,10 @@
 import { Label } from "./label"
 import { event } from "../base/event"
+import { config } from "../constant/config"
 
 export class Button extends Label {
-    public offsetX: number = 4;
-    public offsetY: number = 4;
+    public offsetX: number = config.BUTTON_OFFSET_X;
+    public offsetY: number = config.BUTTON_OFFSET_Y;
 
     private ox: number = 0;
     private oy: number = 0;
@@ -23,7 +24,7 @@ export class Button extends Label {
         setTimeout(() => {
             this.x = this.ox;
             this.y = this.oy;
-        }, 500);
+        }, config.BUTTON_DOWN_DELAY);
     }
 
     public onDettach() {

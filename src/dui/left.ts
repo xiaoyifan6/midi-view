@@ -21,7 +21,7 @@ export class Left extends base.Component {
 
     protected init() {
         super.init();
-        this.borderColor = "#333333";
+        this.borderColor = "#666666";
     }
 
     public onDraw(context: CanvasRenderingContext2D) {

@@ -2,6 +2,7 @@ import { base } from "../base/base"
 import { Tone, MusicalInstrumentData } from "../constant/data"
 import { event } from "../base/event";
 import { Switch } from "../views/switch"
+import { config } from "../constant/config";
 
 export class Item extends base.Component {
     protected data: any;
@@ -167,6 +168,7 @@ export class MidiItem extends Item {
 export class HeadInfoItem extends Item {
     public textColor: string = "#000000";
     public font: string = "16px"
+    public textWidth: number = config.ui.left.listView.item.textWidth;
 
     public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 60) {
         super(x, y, width, height);
@@ -188,6 +190,7 @@ export class HeadInfoItem extends Item {
         var arr = MusicalInstrumentData[s];
         if (arr && arr.length > 0) {
             // var tm = context.measureText(arr[1]);
+            context.lineWidth = this.textWidth;
             context.strokeText(arr[1], box.left + 4, box.top + box.height / 2, box.width);
         }
     }

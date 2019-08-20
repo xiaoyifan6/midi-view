@@ -77,3 +77,26 @@ export function copyCss(cmp: any, css: Css) {
         cmp[key] = css;
     }
 }
+
+/**
+ * 
+ * @param cxt 绘制圆角矩形
+ * @param x 
+ * @param y 
+ * @param width 
+ * @param height 
+ * @param radius 
+ */
+export function drawRoundRect(cxt: CanvasRenderingContext2D,
+    x: number, y: number,
+    width: number, height: number, radius: number) {
+    cxt.beginPath();
+    cxt.arc(x + radius, y + radius, radius, Math.PI, Math.PI * 3 / 2);
+    cxt.lineTo(width - radius + x, y);
+    cxt.arc(width - radius + x, radius + y, radius, Math.PI * 3 / 2, Math.PI * 2);
+    cxt.lineTo(width + x, height + y - radius);
+    cxt.arc(width - radius + x, height - radius + y, radius, 0, Math.PI * 1 / 2);
+    cxt.lineTo(radius + x, height + y);
+    cxt.arc(radius + x, height - radius + y, radius, Math.PI * 1 / 2, Math.PI);
+    cxt.closePath();
+}
