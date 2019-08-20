@@ -52,6 +52,9 @@ export class ListView {
     public setStyle(style: Style) {
         if (style) {
             this.style = style;
+            this.views.forEach(view => {
+                view.setStyle(style);
+            });
         }
     }
 

@@ -106,11 +106,11 @@ exports.MusicalInstrumentData = data_1.MusicalInstrumentData;
 exports.Tone = data_1.Tone;
 var base_1 = __webpack_require__(2);
 exports.base = base_1.base;
-var event_1 = __webpack_require__(3);
+var event_1 = __webpack_require__(6);
 exports.event = event_1.event;
-var views_1 = __webpack_require__(4);
+var views_1 = __webpack_require__(7);
 exports.views = views_1.views;
-var main_1 = __webpack_require__(9);
+var main_1 = __webpack_require__(12);
 exports.MidiView = main_1.MidiView;
 
 
@@ -404,6 +404,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var config_1 = __webpack_require__(3);
+var util_1 = __webpack_require__(5);
 var base;
 (function (base) {
     var Point = (function () {
@@ -581,18 +583,25 @@ var base;
             if (height === void 0) { height = 0; }
             var _this = _super.call(this, x, y, width, height) || this;
             _this.children = [];
-            _this.bgColor = "#ffffff";
+            _this.bgColor = config_1.config.DEFAULT_BG_COLOR;
             _this.scaleX = 1;
             _this.scaleY = 1;
+            _this.radius = 0;
             _this.overflow = false;
             _this.active = false;
             _this.visible = true;
-            _this.borderWith = 0;
-            _this.borderColor = "#000000";
+            _this.borderWith = config_1.config.DEFAULT_BORDER_WIDTH;
+            _this.borderColor = config_1.config.DEFAULT_BORDER_COLOR;
             _this.box = new Box(_this);
             _this.init();
             return _this;
         }
+        Component.prototype.setStyle = function (style) {
+            if (!style)
+                return;
+            this.borderColor = style.borderColor;
+            this.bgColor = style.bgColor;
+        };
         Component.prototype.release = function () {
             this.active = false;
         };
@@ -658,7 +667,12 @@ var base;
                 context.rect(bound.left, bound.top, bound.right, bound.bottom);
                 context.clip();
             }
-            context.fillRect(box.left, box.top, box.width, box.height);
+            if (this.radius === 0) {
+                context.fillRect(box.left, box.top, box.width, box.height);
+            }
+            else {
+                util_1.drawRoundRect(context, box.left, box.top, box.width, box.height, this.radius);
+            }
             for (var i = 0; i < this.children.length; i++) {
                 context.save();
                 this.children[i] && this.children[i].visible && this.children[i].onDraw(context);
@@ -668,7 +682,12 @@ var base;
                 context.beginPath();
                 context.lineWidth = this.borderWith;
                 context.strokeStyle = this.borderColor;
-                context.strokeRect(box.left, box.top, box.width, box.height);
+                if (this.radius === 0) {
+                    context.strokeRect(box.left, box.top, box.width, box.height);
+                }
+                else {
+                    util_1.drawRoundRect(context, box.left, box.top, box.width, box.height, this.radius);
+                }
                 context.stroke();
             }
         };
@@ -676,8 +695,9 @@ var base;
     }(Rect));
     base.Component = Component;
     var BaseUI = (function () {
-        function BaseUI(container) {
+        function BaseUI(container, theme) {
             this.container = container;
+            this.theme = theme;
         }
         BaseUI.prototype.addChild = function (cmp) {
             this.container.addChild(cmp);
@@ -711,6 +731,9 @@ var base;
             enumerable: true,
             configurable: true
         });
+        BaseUI.prototype.setTheme = function (theme) {
+            this.theme = theme;
+        };
         BaseUI.prototype.hide = function () {
         };
         BaseUI.prototype.show = function () {
@@ -726,6 +749,628 @@ var base;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var color_1 = __webpack_require__(4);
+exports.config = {
+    DEFAULT_BG_COLOR: color_1.Color.WHITE,
+    DEFAULT_BORDER_COLOR: color_1.Color.BLACK,
+    DEFAULT_BORDER_WIDTH: 0,
+    BUTTON_DOWN_DELAY: 500,
+    BUTTON_OFFSET_X: 4,
+    BUTTON_OFFSET_Y: 4,
+    LABEL_LINEHEIGHT: 20,
+    LABEL_FONT_SIZE: 14,
+    DEFAULT_BAR_WIDTH: 4,
+    DEFAULT_BMP: 2,
+    DEFAULT_TEMPOS: 120,
+    TONE_DELAY: 0.5,
+    REFRESH_INTERVAL: 100,
+    WHELL_RATE: 0.1,
+    ui: {
+        headHeight: 40,
+        leftWidth: 80,
+        hearder: {
+            dw: 8,
+            bate: 4,
+            borderWith: 1,
+            lineWidth: 0.4,
+            indexWidth: 0.5,
+            textWidth: 0.6,
+        },
+        left: {
+            lineWidth: 0.4,
+            borderWith: 1,
+            listView: {
+                itemHeight: 60,
+                item: {
+                    textWidth: 0.8
+                }
+            }
+        },
+        body: {
+            dw: 8,
+            paddingRight: 40,
+            bate: 4,
+            lineWidth: 0.4,
+            indexWidth: 0.5,
+            listView: {
+                height: 60,
+                scrollBarWidth: 0,
+                itemHeight: 60,
+                item: {
+                    textWidth: 0.5,
+                }
+            }
+        }
+    },
+    dui: {
+        headHeight: 40,
+        leftWidth: 70,
+        toneDelay: 0.1,
+        hearder: {
+            dw: 8,
+            bate: 4,
+            lineWidth: 0.4,
+            indexWidth: 0.5,
+            borderWith: 1,
+            textWidth: 0.6,
+        },
+        left: {
+            lineWidth: 1,
+            borderWith: 1,
+        },
+        body: {
+            dh: 8,
+            dw: 40,
+            indexWidth: 0.5,
+            lineWidth: 0.5,
+            paddingRight: 10,
+        },
+        closeBtn: {
+            x: 10,
+            y: 10,
+            width: 40,
+            height: 20,
+            borderWith: 0.8,
+            radius: 5
+        }
+    }
+};
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Color = {
+    SNOW: "#FFFAFA",
+    PALETURQUOISE1: "#BBFFFF",
+    GHOSTWHITE: "#F8F8FF",
+    PALETURQUOISE2: "#AEEEEE",
+    WHITESMOKE: "#F5F5F5",
+    PALETURQUOISE3: "#96CDCD",
+    GAINSBORO: "#DCDCDC",
+    PALETURQUOISE4: "#668B8B",
+    FLORALWHITE: "#FFFAF0",
+    CADETBLUE1: "#98F5FF",
+    OLDLACE: "#FDF5E6",
+    CADETBLUE2: "#8EE5EE",
+    LINEN: "#FAF0E6",
+    CADETBLUE3: "#7AC5CD",
+    ANTIQUEWHITE: "#FAEBD7",
+    CADETBLUE4: "#53868B",
+    PAPAYAWHIP: "#FFEFD5",
+    TURQUOISE1: "#00F5FF",
+    BLANCHEDALMOND: "#FFEBCD",
+    TURQUOISE2: "#00E5EE",
+    BISQUE: "#FFE4C4",
+    TURQUOISE3: "#00C5CD",
+    PEACHPUFF: "#FFDAB9",
+    TURQUOISE4: "#00868B",
+    NAVAJOWHITE: "#FFDEAD",
+    CYAN1: "#00FFFF",
+    MOCCASIN: "#FFE4B5",
+    CYAN2: "#00EEEE",
+    CORNSILK: "#FFF8DC",
+    CYAN3: "#00CDCD",
+    IVORY: "#FFFFF0",
+    CYAN4: "#008B8B",
+    LEMONCHIFFON: "#FFFACD",
+    DARKSLATEGRAY1: "#97FFFF",
+    SEASHELL: "#FFF5EE",
+    DARKSLATEGRAY2: "#8DEEEE",
+    HONEYDEW: "#F0FFF0",
+    DARKSLATEGRAY3: "#79CDCD",
+    MINTCREAM: "#F5FFFA",
+    DARKSLATEGRAY4: "#528B8B",
+    AZURE: "#F0FFFF",
+    AQUAMARINE1: "#7FFFD4",
+    ALICEBLUE: "#F0F8FF",
+    AQUAMARINE2: "#76EEC6",
+    LAVENDER: "#E6E6FA",
+    AQUAMARINE3: "#66CDAA",
+    LAVENDERBLUSH: "#FFF0F5",
+    AQUAMARINE4: "#458B74",
+    MISTYROSE: "#FFE4E1",
+    DARKSEAGREEN1: "#C1FFC1",
+    WHITE: "#FFFFFF",
+    DARKSEAGREEN2: "#B4EEB4",
+    BLACK: "#000000",
+    DARKSEAGREEN3: "#9BCD9B",
+    DARKSLATEGRAY: "#2F4F4F",
+    DARKSEAGREEN4: "#698B69",
+    DIMGREY: "#696969",
+    SEAGREEN1: "#54FF9F",
+    SLATEGREY: "#708090",
+    SEAGREEN2: "#4EEE94",
+    LIGHTSLATEGRAY: "#778899",
+    SEAGREEN3: "#43CD80",
+    GREY: "#BEBEBE",
+    SEAGREEN4: "#2E8B57",
+    LIGHTGRAY: "#D3D3D3",
+    PALEGREEN1: "#9AFF9A",
+    MIDNIGHTBLUE: "#191970",
+    PALEGREEN2: "#90EE90",
+    NAVYBLUE: "#000080",
+    PALEGREEN3: "#7CCD7C",
+    CORNFLOWERBLUE: "#6495ED",
+    PALEGREEN4: "#548B54",
+    DARKSLATEBLUE: "#483D8B",
+    SPRINGGREEN1: "#00FF7F",
+    SLATEBLUE: "#6A5ACD",
+    SPRINGGREEN2: "#00EE76",
+    MEDIUMSLATEBLUE: "#7B68EE",
+    SPRINGGREEN3: "#00CD66",
+    LIGHTSLATEBLUE: "#8470FF",
+    SPRINGGREEN4: "#008B45",
+    MEDIUMBLUE: "#0000CD",
+    GREEN1: "#00FF00",
+    ROYALBLUE: "#4169E1",
+    GREEN2: "#00EE00",
+    BLUE: "#0000FF",
+    GREEN3: "#00CD00",
+    DODGERBLUE: "#1E90FF",
+    GREEN4: "#008B00",
+    DEEPSKYBLUE: "#00BFFF",
+    CHARTREUSE1: "#7FFF00",
+    SKYBLUE: "#87CEEB",
+    CHARTREUSE2: "#76EE00",
+    LIGHTSKYBLUE: "#87CEFA",
+    CHARTREUSE3: "#66CD00",
+    STEELBLUE: "#4682B4",
+    CHARTREUSE4: "#458B00",
+    LIGHTSTEELBLUE: "#B0C4DE",
+    OLIVEDRAB1: "#C0FF3E",
+    LIGHTBLUE: "#ADD8E6",
+    OLIVEDRAB2: "#B3EE3A",
+    POWDERBLUE: "#B0E0E6",
+    OLIVEDRAB3: "#9ACD32",
+    PALETURQUOISE: "#AFEEEE",
+    OLIVEDRAB4: "#698B22",
+    DARKTURQUOISE: "#00CED1",
+    DARKOLIVEGREEN1: "#CAFF70",
+    MEDIUMTURQUOISE: "#48D1CC",
+    DARKOLIVEGREEN2: "#BCEE68",
+    TURQUOISE: "#40E0D0",
+    DARKOLIVEGREEN3: "#A2CD5A",
+    CYAN: "#00FFFF",
+    DARKOLIVEGREEN4: "#6E8B3D",
+    LIGHTCYAN: "#E0FFFF",
+    KHAKI1: "#FFF68F",
+    CADETBLUE: "#5F9EA0",
+    KHAKI2: "#EEE685",
+    MEDIUMAQUAMARINE: "#66CDAA",
+    KHAKI3: "#CDC673",
+    AQUAMARINE: "#7FFFD4",
+    KHAKI4: "#8B864E",
+    DARKGREEN: "#006400",
+    LIGHTGOLDENROD1: "#FFEC8B",
+    DARKOLIVEGREEN: "#556B2F",
+    LIGHTGOLDENROD2: "#EEDC82",
+    DARKSEAGREEN: "#8FBC8F",
+    LIGHTGOLDENROD3: "#CDBE70",
+    SEAGREEN: "#2E8B57",
+    LIGHTGOLDENROD4: "#8B814C",
+    MEDIUMSEAGREEN: "#3CB371",
+    LIGHTYELLOW1: "#FFFFE0",
+    LIGHTSEAGREEN: "#20B2AA",
+    LIGHTYELLOW2: "#EEEED1",
+    PALEGREEN: "#98FB98",
+    LIGHTYELLOW3: "#CDCDB4",
+    SPRINGGREEN: "#00FF7F",
+    LIGHTYELLOW4: "#8B8B7A",
+    LAWNGREEN: "#7CFC00",
+    YELLOW1: "#FFFF00",
+    GREEN: "#00FF00",
+    YELLOW2: "#EEEE00",
+    CHARTREUSE: "#7FFF00",
+    YELLOW3: "#CDCD00",
+    MEDSPRINGGREEN: "#00FA9A",
+    YELLOW4: "#8B8B00",
+    GREENYELLOW: "#ADFF2F",
+    GOLD1: "#FFD700",
+    LIMEGREEN: "#32CD32",
+    GOLD2: "#EEC900",
+    YELLOWGREEN: "#9ACD32",
+    GOLD3: "#CDAD00",
+    FORESTGREEN: "#228B22",
+    GOLD4: "#8B7500",
+    OLIVEDRAB: "#6B8E23",
+    GOLDENROD1: "#FFC125",
+    DARKKHAKI: "#BDB76B",
+    GOLDENROD2: "#EEB422",
+    PALEGOLDENROD: "#EEE8AA",
+    GOLDENROD3: "#CD9B1D",
+    LTGOLDENRODYELLO: "#FAFAD2",
+    GOLDENROD4: "#8B6914",
+    LIGHTYELLOW: "#FFFFE0",
+    DARKGOLDENROD1: "#FFB90F",
+    YELLOW: "#FFFF00",
+    DARKGOLDENROD2: "#EEAD0E",
+    GOLD: "#FFD700",
+    DARKGOLDENROD3: "#CD950C",
+    LIGHTGOLDENROD: "#EEDD82",
+    DARKGOLDENROD4: "#8B658B",
+    GOLDENROD: "#DAA520",
+    ROSYBROWN1: "#FFC1C1",
+    DARKGOLDENROD: "#B8860B",
+    ROSYBROWN2: "#EEB4B4",
+    ROSYBROWN: "#BC8F8F",
+    ROSYBROWN3: "#CD9B9B",
+    INDIANRED: "#CD5C5C",
+    ROSYBROWN4: "#8B6969",
+    SADDLEBROWN: "#8B4513",
+    INDIANRED1: "#FF6A6A",
+    SIENNA: "#A0522D",
+    INDIANRED2: "#EE6363",
+    PERU: "#CD853F",
+    INDIANRED3: "#CD5555",
+    BURLYWOOD: "#DEB887",
+    INDIANRED4: "#8B3A3A",
+    BEIGE: "#F5F5DC",
+    SIENNA1: "#FF8247",
+    WHEAT: "#F5DEB3",
+    SIENNA2: "#EE7942",
+    SANDYBROWN: "#F4A460",
+    SIENNA3: "#CD6839",
+    TAN: "#D2B48C",
+    SIENNA4: "#8B4726",
+    CHOCOLATE: "#D2691E",
+    BURLYWOOD1: "#FFD39B",
+    FIREBRICK: "#B22222",
+    BURLYWOOD2: "#EEC591",
+    BROWN: "#A52A2A",
+    BURLYWOOD3: "#CDAA7D",
+    DARKSALMON: "#E9967A",
+    BURLYWOOD4: "#8B7355",
+    SALMON: "#FA8072",
+    WHEAT1: "#FFE7BA",
+    LIGHTSALMON: "#FFA07A",
+    WHEAT2: "#EED8AE",
+    ORANGE: "#FFA500",
+    WHEAT3: "#CDBA96",
+    DARKORANGE: "#FF8C00",
+    WHEAT4: "#8B7E66",
+    CORAL: "#FF7F50",
+    TAN1: "#FFA54F",
+    LIGHTCORAL: "#F08080",
+    TAN2: "#EE9A49",
+    TOMATO: "#FF6347",
+    TAN3: "#CD853F",
+    ORANGERED: "#FF4500",
+    TAN4: "#8B5A2B",
+    RED: "#FF0000",
+    CHOCOLATE1: "#FF7F24",
+    HOTPINK: "#FF69B4",
+    CHOCOLATE2: "#EE7621",
+    DEEPPINK: "#FF1493",
+    CHOCOLATE3: "#CD661D",
+    PINK: "#FFC0CB",
+    CHOCOLATE4: "#8B4513",
+    LIGHTPINK: "#FFB6C1",
+    FIREBRICK1: "#FF3030",
+    PALEVIOLETRED: "#DB7093",
+    FIREBRICK2: "#EE2C2C",
+    MAROON: "#B03060",
+    FIREBRICK3: "#CD2626",
+    MEDIUMVIOLETRED: "#C71585",
+    FIREBRICK4: "#8B1A1A",
+    VIOLETRED: "#D02090",
+    BROWN1: "#FF4040",
+    MAGENTA: "#FF00FF",
+    BROWN2: "#EE3B3B",
+    VIOLET: "#EE82EE",
+    BROWN3: "#CD3333",
+    PLUM: "#DDA0DD",
+    BROWN4: "#8B2323",
+    ORCHID: "#DA70D6",
+    SALMON1: "#FF8C69",
+    MEDIUMORCHID: "#BA55D3",
+    SALMON2: "#EE8262",
+    DARKORCHID: "#9932CC",
+    SALMON3: "#CD7054",
+    DARKVIOLET: "#9400D3",
+    SALMON4: "#8B4C39",
+    BLUEVIOLET: "#8A2BE2",
+    LIGHTSALMON1: "#FFA07A",
+    PURPLE: "#A020F0",
+    LIGHTSALMON2: "#EE9572",
+    MEDIUMPURPLE: "#9370DB",
+    LIGHTSALMON3: "#CD8162",
+    THISTLE: "#D8BFD8",
+    LIGHTSALMON4: "#8B5742",
+    SNOW1: "#FFFAFA",
+    ORANGE1: "#FFA500",
+    SNOW2: "#EEE9E9",
+    ORANGE2: "#EE9A00",
+    SNOW3: "#CDC9C9",
+    ORANGE3: "#CD8500",
+    SNOW4: "#8B8989",
+    ORANGE4: "#8B5A00",
+    SEASHELL1: "#FFF5EE",
+    DARKORANGE1: "#FF7F00",
+    SEASHELL2: "#EEE5DE",
+    DARKORANGE2: "#EE7600",
+    SEASHELL3: "#CDC5BF",
+    DARKORANGE3: "#CD6600",
+    SEASHELL4: "#8B8682",
+    DARKORANGE4: "#8B4500",
+    ANTIQUEWHITE1: "#FFEFDB",
+    CORAL1: "#FF7256",
+    ANTIQUEWHITE2: "#EEDFCC",
+    CORAL2: "#EE6A50",
+    ANTIQUEWHITE3: "#CDC0B0",
+    CORAL3: "#CD5B45",
+    ANTIQUEWHITE4: "#8B8378",
+    CORAL4: "#8B3E2F",
+    BISQUE1: "#FFE4C4",
+    TOMATO1: "#FF6347",
+    BISQUE2: "#EED5B7",
+    TOMATO2: "#EE5C42",
+    BISQUE3: "#CDB79E",
+    TOMATO3: "#CD4F39",
+    BISQUE4: "#8B7D6B",
+    TOMATO4: "#8B3626",
+    PEACHPUFF1: "#FFDAB9",
+    ORANGERED1: "#FF4500",
+    PEACHPUFF2: "#EECBAD",
+    ORANGERED2: "#EE4000",
+    PEACHPUFF3: "#CDAF95",
+    ORANGERED3: "#CD3700",
+    PEACHPUFF4: "#8B7765",
+    ORANGERED4: "#8B2500",
+    NAVAJOWHITE1: "#FFDEAD",
+    RED1: "#FF0000",
+    NAVAJOWHITE2: "#EECFA1",
+    RED2: "#EE0000",
+    NAVAJOWHITE3: "#CDB38B",
+    RED3: "#CD0000",
+    NAVAJOWHITE4: "#8B795E",
+    RED4: "#8B0000",
+    LEMONCHIFFON1: "#FFFACD",
+    DEEPPINK1: "#FF1493",
+    LEMONCHIFFON2: "#EEE9BF",
+    DEEPPINK2: "#EE1289",
+    LEMONCHIFFON3: "#CDC9A5",
+    DEEPPINK3: "#CD1076",
+    LEMONCHIFFON4: "#8B8970",
+    DEEPPINK4: "#8B0A50",
+    CORNSILK1: "#FFF8DC",
+    HOTPINK1: "#FF6EB4",
+    CORNSILK2: "#EEE8CD",
+    HOTPINK2: "#EE6AA7",
+    CORNSILK3: "#CDC8B1",
+    HOTPINK3: "#CD6090",
+    CORNSILK4: "#8B8878",
+    HOTPINK4: "#8B3A62",
+    IVORY1: "#FFFFF0",
+    PINK1: "#FFB5C5",
+    IVORY2: "#EEEEE0",
+    PINK2: "#EEA9B8",
+    IVORY3: "#CDCDC1",
+    PINK3: "#CD919E",
+    IVORY4: "#8B8B83",
+    PINK4: "#8B636C",
+    HONEYDEW1: "#F0FFF0",
+    LIGHTPINK1: "#FFAEB9",
+    HONEYDEW2: "#E0EEE0",
+    LIGHTPINK2: "#EEA2AD",
+    HONEYDEW3: "#C1CDC1",
+    LIGHTPINK3: "#CD8C95",
+    HONEYDEW4: "#838B83",
+    LIGHTPINK4: "#8B5F65",
+    LAVENDERBLUSH1: "#FFF0F5",
+    PALEVIOLETRED1: "#FF82AB",
+    LAVENDERBLUSH2: "#EEE0E5",
+    PALEVIOLETRED2: "#EE799F",
+    LAVENDERBLUSH3: "#CDC1C5",
+    PALEVIOLETRED3: "#CD6889",
+    LAVENDERBLUSH4: "#8B8386",
+    PALEVIOLETRED4: "#8B475D",
+    MISTYROSE1: "#FFE4E1",
+    MAROON1: "#FF34B3",
+    MISTYROSE2: "#EED5D2",
+    MAROON2: "#EE30A7",
+    MISTYROSE3: "#CDB7B5",
+    MAROON3: "#CD2990",
+    MISTYROSE4: "#8B7D7B",
+    MAROON4: "#8B1C62",
+    AZURE1: "#F0FFFF",
+    VIOLETRED1: "#FF3E96",
+    AZURE2: "#E0EEEE",
+    VIOLETRED2: "#EE3A8C",
+    AZURE3: "#C1CDCD",
+    VIOLETRED3: "#CD3278",
+    AZURE4: "#838B8B",
+    VIOLETRED4: "#8B2252",
+    SLATEBLUE1: "#836FFF",
+    MAGENTA1: "#FF00FF",
+    SLATEBLUE2: "#7A67EE",
+    MAGENTA2: "#EE00EE",
+    SLATEBLUE3: "#6959CD",
+    MAGENTA3: "#CD00CD",
+    SLATEBLUE4: "#473C8B",
+    MAGENTA4: "#8B008B",
+    ROYALBLUE1: "#4876FF",
+    ORCHID1: "#FF83FA",
+    ROYALBLUE2: "#436EEE",
+    ORCHID2: "#EE7AE9",
+    ROYALBLUE3: "#3A5FCD",
+    ORCHID3: "#CD69C9",
+    ROYALBLUE4: "#27408B",
+    ORCHID4: "#8B4789",
+    BLUE1: "#0000FF",
+    PLUM1: "#FFBBFF",
+    BLUE2: "#0000EE",
+    PLUM2: "#EEAEEE",
+    BLUE3: "#0000CD",
+    PLUM3: "#CD96CD",
+    BLUE4: "#00008B",
+    PLUM4: "#8B668B",
+    DODGERBLUE1: "#1E90FF",
+    MEDIUMORCHID1: "#E066FF",
+    DODGERBLUE2: "#1C86EE",
+    MEDIUMORCHID2: "#D15FEE",
+    DODGERBLUE3: "#1874CD",
+    MEDIUMORCHID3: "#B452CD",
+    DODGERBLUE4: "#104E8B",
+    MEDIUMORCHID4: "#7A378B",
+    STEELBLUE1: "#63B8FF",
+    DARKORCHID1: "#BF3EFF",
+    STEELBLUE2: "#5CACEE",
+    DARKORCHID2: "#B23AEE",
+    STEELBLUE3: "#4F94CD",
+    DARKORCHID3: "#9A32CD",
+    STEELBLUE4: "#36648B",
+    DARKORCHID4: "#68228B",
+    DEEPSKYBLUE1: "#00BFFF",
+    PURPLE1: "#9B30FF",
+    DEEPSKYBLUE2: "#00B2EE",
+    PURPLE2: "#912CEE",
+    DEEPSKYBLUE3: "#009ACD",
+    PURPLE3: "#7D26CD",
+    DEEPSKYBLUE4: "#00688B",
+    PURPLE4: "#551A8B",
+    SKYBLUE1: "#87CEFF",
+    MEDIUMPURPLE1: "#AB82FF",
+    SKYBLUE2: "#7EC0EE",
+    MEDIUMPURPLE2: "#9F79EE",
+    SKYBLUE3: "#6CA6CD",
+    MEDIUMPURPLE3: "#8968CD",
+    SKYBLUE4: "#4A708B",
+    MEDIUMPURPLE4: "#5D478B",
+    LIGHTSKYBLUE1: "#B0E2FF",
+    THISTLE1: "#FFE1FF",
+    LIGHTSKYBLUE2: "#A4D3EE",
+    THISTLE2: "#EED2EE",
+    LIGHTSKYBLUE3: "#8DB6CD",
+    THISTLE3: "#CDB5CD",
+    LIGHTSKYBLUE4: "#607B8B",
+    THISTLE4: "#8B7B8B",
+    SLATEGRAY1: "#C6E2FF",
+    GREY11: "#1C1C1C",
+    SLATEGRAY2: "#B9D3EE",
+    GREY21: "#363636",
+    SLATEGRAY3: "#9FB6CD",
+    GREY31: "#4F4F4F",
+    SLATEGRAY4: "#6C7B8B",
+    GREY41: "#696969",
+    LIGHTSTEELBLUE1: "#CAE1FF",
+    GREY51: "#828282",
+    LIGHTSTEELBLUE2: "#BCD2EE",
+    GREY61: "#9C9C9C",
+    LIGHTSTEELBLUE3: "#A2B5CD",
+    GREY71: "#B5B5B5",
+    LIGHTSTEELBLUE4: "#6E7B8B",
+    GRAY81: "#CFCFCF",
+    LIGHTBLUE1: "#BFEFFF",
+    GRAY91: "#E8E8E8",
+    LIGHTBLUE2: "#B2DFEE",
+    DARKGREY: "#A9A9A9",
+    LIGHTBLUE3: "#9AC0CD",
+    DARKBLUE: "#00008B",
+    LIGHTBLUE4: "#68838B",
+    DARKCYAN: "#008B8B",
+    LIGHTCYAN1: "#E0FFFF",
+    DARKMAGENTA: "#8B008B",
+    LIGHTCYAN2: "#D1EEEE",
+    DARKRED: "#8B0000",
+    LIGHTCYAN3: "#B4CDCD",
+    LIGHTCYAN4: "#7A8B8B",
+    LIGHTGREEN: "#90EE90",
+};
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function clone(data) {
+    if (!data)
+        return undefined;
+    var d = JSON.parse(JSON.stringify(data));
+    for (var key in data) {
+        if (typeof data[key] === "function") {
+            d[key] = data[key];
+        }
+    }
+    return d;
+}
+exports.clone = clone;
+function isString(data) {
+    return typeof data === "string";
+}
+exports.isString = isString;
+function isNumber(data) {
+    return typeof data === "number";
+}
+exports.isNumber = isNumber;
+function isArray(data) {
+    return Array.isArray(data);
+}
+exports.isArray = isArray;
+function isBool(data) {
+    return typeof data === "boolean";
+}
+exports.isBool = isBool;
+function isFunction(data) {
+    return typeof data === "function";
+}
+exports.isFunction = isFunction;
+function copyCss(cmp, css) {
+    if (!cmp || !css)
+        return;
+    for (var key in css) {
+        cmp[key] = css;
+    }
+}
+exports.copyCss = copyCss;
+function drawRoundRect(cxt, x, y, width, height, radius) {
+    cxt.beginPath();
+    cxt.arc(x + radius, y + radius, radius, Math.PI, Math.PI * 3 / 2);
+    cxt.lineTo(width - radius + x, y);
+    cxt.arc(width - radius + x, radius + y, radius, Math.PI * 3 / 2, Math.PI * 2);
+    cxt.lineTo(width + x, height + y - radius);
+    cxt.arc(width - radius + x, height - radius + y, radius, 0, Math.PI * 1 / 2);
+    cxt.lineTo(radius + x, height + y);
+    cxt.arc(radius + x, height - radius + y, radius, Math.PI * 1 / 2, Math.PI);
+    cxt.closePath();
+}
+exports.drawRoundRect = drawRoundRect;
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -806,16 +1451,16 @@ var event;
 
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var label_1 = __webpack_require__(5);
-var button_1 = __webpack_require__(6);
-var switch_1 = __webpack_require__(7);
-var slider_1 = __webpack_require__(8);
+var label_1 = __webpack_require__(8);
+var button_1 = __webpack_require__(9);
+var switch_1 = __webpack_require__(10);
+var slider_1 = __webpack_require__(11);
 exports.views = {
     Label: label_1.Label,
     Button: button_1.Button,
@@ -825,7 +1470,7 @@ exports.views = {
 
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -845,14 +1490,15 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
+var config_1 = __webpack_require__(3);
 var Label = (function (_super) {
     __extends(Label, _super);
     function Label() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._text = "";
         _this.textColor = "#000000";
-        _this.font = "14px";
-        _this.lineHeight = 20;
+        _this.font = config_1.config.LABEL_FONT_SIZE + "px";
+        _this.lineHeight = config_1.config.LABEL_LINEHEIGHT;
         _this.multyLine = false;
         return _this;
     }
@@ -866,6 +1512,14 @@ var Label = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Label.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
+    };
     Label.prototype.onDraw = function (context) {
         if (this.parent == null || !this.visible)
             return;
@@ -888,7 +1542,7 @@ var Label = (function (_super) {
             }
         }
         else {
-            context.strokeText(this._text, box.left + (box.width - m.width) / 2, box.top + box.height / 2 + 14 / 4);
+            context.strokeText(this._text, box.left + (box.width - m.width) / 2, box.top + box.height / 2 + config_1.config.LABEL_FONT_SIZE / 4);
         }
         context.stroke();
     };
@@ -898,7 +1552,7 @@ exports.Label = Label;
 
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -917,8 +1571,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var label_1 = __webpack_require__(5);
-var event_1 = __webpack_require__(3);
+var label_1 = __webpack_require__(8);
+var event_1 = __webpack_require__(6);
+var config_1 = __webpack_require__(3);
 var Button = (function (_super) {
     __extends(Button, _super);
     function Button(x, y, width, height) {
@@ -927,8 +1582,8 @@ var Button = (function (_super) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         var _this = _super.call(this, x, y, width, height) || this;
-        _this.offsetX = 4;
-        _this.offsetY = 4;
+        _this.offsetX = config_1.config.BUTTON_OFFSET_X;
+        _this.offsetY = config_1.config.BUTTON_OFFSET_Y;
         _this.ox = 0;
         _this.oy = 0;
         event_1.event.bind(event_1.event.TOUCH_DOWN, _this.onDown, _this);
@@ -943,7 +1598,7 @@ var Button = (function (_super) {
         setTimeout(function () {
             _this.x = _this.ox;
             _this.y = _this.oy;
-        }, 500);
+        }, config_1.config.BUTTON_DOWN_DELAY);
     };
     Button.prototype.onDettach = function () {
         _super.prototype.onDettach.call(this);
@@ -955,7 +1610,7 @@ exports.Button = Button;
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -975,7 +1630,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
-var event_1 = __webpack_require__(3);
+var event_1 = __webpack_require__(6);
 var Switch = (function (_super) {
     __extends(Switch, _super);
     function Switch() {
@@ -1024,7 +1679,7 @@ exports.Switch = Switch;
 
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1044,7 +1699,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
-var event_1 = __webpack_require__(3);
+var event_1 = __webpack_require__(6);
 var Slider = (function (_super) {
     __extends(Slider, _super);
     function Slider() {
@@ -1089,7 +1744,7 @@ exports.Slider = Slider;
 
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1130,15 +1785,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Midi = __webpack_require__(10).Midi;
-var Tone = __webpack_require__(24);
+var Midi = __webpack_require__(13).Midi;
+var Tone = __webpack_require__(27);
 var base_1 = __webpack_require__(2);
-var ui_1 = __webpack_require__(180);
-var event_1 = __webpack_require__(3);
-var util_1 = __webpack_require__(185);
-var dui_1 = __webpack_require__(186);
+var ui_1 = __webpack_require__(183);
+var event_1 = __webpack_require__(6);
+var util_1 = __webpack_require__(5);
+var dui_1 = __webpack_require__(188);
+var config_1 = __webpack_require__(3);
+var theme_1 = __webpack_require__(191);
 var MidiView = (function () {
-    function MidiView(view) {
+    function MidiView(view, key) {
         this.eobj = { x: 0, y: 0, detailX: 0, detailY: 0, oldX: 0, oldY: 0, x0: 0, y0: 0 };
         this.active = false;
         this.keysMap = {};
@@ -1160,15 +1817,28 @@ var MidiView = (function () {
             throw "unsupport canvas 2d";
         }
         this.container = new base_1.base.Component();
-        this.container.borderWith = 2;
+        this.container.borderWith = config_1.config.DEFAULT_BMP;
         this.container.borderColor = "#cccccc";
         this.container.parent = new base_1.base.Component();
-        this.dui = new dui_1.DUI(this.container);
+        if (key && theme_1.ThemeConfig[key]) {
+            theme_1.theme.cur = theme_1.ThemeConfig[key];
+        }
+        this.dui = new dui_1.DUI(this.container, theme_1.theme.cur);
         this.dui.hide();
-        this.ui = new ui_1.UI(this.container);
+        this.ui = new ui_1.UI(this.container, theme_1.theme.cur);
         this.fit();
         this.bind();
+        this.container.setStyle(theme_1.theme.cur.style);
     }
+    MidiView.prototype.setTheme = function (key) {
+        if (theme_1.ThemeConfig[key]) {
+            theme_1.theme.cur = theme_1.ThemeConfig[key];
+            this.container.setStyle(theme_1.theme.cur.style);
+            this.ui.setTheme(theme_1.theme.cur);
+            this.dui.setTheme(theme_1.theme.cur);
+            this.refresh();
+        }
+    };
     MidiView.prototype.refresh = function () {
         this.container.onDraw(this.context);
     };
@@ -1249,7 +1919,7 @@ var MidiView = (function () {
     };
     MidiView.prototype.onScroll = function (e) {
         e = e || window.event;
-        var detail = (e["wheelDelta"] || e["detail"] || 0) * 0.1;
+        var detail = (e["wheelDelta"] || e["detail"] || 0) * config_1.config.WHELL_RATE;
         if (this.keysMap["ALT"]) {
             this.eobj.detailX = detail;
             this.eobj.detailY = 0;
@@ -1314,7 +1984,7 @@ var MidiView = (function () {
         var _this = this;
         this.stop();
         var self = this;
-        var now = Tone.now() + 0.5;
+        var now = Tone.now() + config_1.config.TONE_DELAY;
         this.startTime = now;
         this.synths = [];
         var _loop_1 = function () {
@@ -1342,7 +2012,7 @@ var MidiView = (function () {
             self.ui.position = (Tone.now() - self.startTime) * _this.bpm;
             self.dui.position = (Tone.now() - self.startTime) * _this.bpm;
             self.refresh();
-        }, 100);
+        }, config_1.config.REFRESH_INTERVAL);
     };
     MidiView.prototype.stop = function () {
         while (this.synths.length) {
@@ -1362,10 +2032,10 @@ var MidiView = (function () {
             if (this.data["header"]) {
                 if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
                     Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
-                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
                 }
                 else {
-                    Tone.Transport.bpm.value = 120;
+                    Tone.Transport.bpm.value = config_1.config.DEFAULT_TEMPOS;
                 }
                 if (this.data["header"]["ppq"]) {
                     Tone.Transport.PPQ = this.data["header"]["ppq"];
@@ -1423,7 +2093,7 @@ exports.MidiView = MidiView;
 
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1464,10 +2134,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var midi_file_1 = __webpack_require__(11);
-var Encode_1 = __webpack_require__(14);
-var Header_1 = __webpack_require__(15);
-var Track_1 = __webpack_require__(18);
+var midi_file_1 = __webpack_require__(14);
+var Encode_1 = __webpack_require__(17);
+var Header_1 = __webpack_require__(18);
+var Track_1 = __webpack_require__(21);
 /**
  * The main midi parsing class
  */
@@ -1616,15 +2286,15 @@ exports.Midi = Midi;
 //# sourceMappingURL=Midi.js.map
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports.parseMidi = __webpack_require__(12)
-exports.writeMidi = __webpack_require__(13)
+exports.parseMidi = __webpack_require__(15)
+exports.writeMidi = __webpack_require__(16)
 
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports) {
 
 // data can be any array-like object.  It just needs to support .length, .slice, and an element getter []
@@ -1968,7 +2638,7 @@ module.exports = parseMidi
 
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports) {
 
 // data should be the same type of format returned by parseMidi
@@ -2334,16 +3004,16 @@ module.exports = writeMidi
 
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var midi_file_1 = __webpack_require__(11);
-var Header_1 = __webpack_require__(15);
+var midi_file_1 = __webpack_require__(14);
+var Header_1 = __webpack_require__(18);
 // tslint:disable-next-line: no-var-requires
-var flatten = __webpack_require__(17);
+var flatten = __webpack_require__(20);
 function encodeNote(note, channel) {
     return [{
             absoluteTime: note.ticks,
@@ -2500,13 +3170,13 @@ exports.encode = encode;
 //# sourceMappingURL=Encode.js.map
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var BinarySearch_1 = __webpack_require__(16);
+var BinarySearch_1 = __webpack_require__(19);
 var privatePPQMap = new WeakMap();
 exports.keySignatureKeys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#"];
 /** The parsed midi file header */
@@ -2712,7 +3382,7 @@ exports.Header = Header;
 //# sourceMappingURL=Header.js.map
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2777,7 +3447,7 @@ exports.insert = insert;
 //# sourceMappingURL=BinarySearch.js.map
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2892,17 +3562,17 @@ function flattenDownDepth (array, result, depth) {
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var BinarySearch_1 = __webpack_require__(16);
-var ControlChange_1 = __webpack_require__(19);
-var ControlChanges_1 = __webpack_require__(20);
-var Instrument_1 = __webpack_require__(21);
-var Note_1 = __webpack_require__(23);
+var BinarySearch_1 = __webpack_require__(19);
+var ControlChange_1 = __webpack_require__(22);
+var ControlChanges_1 = __webpack_require__(23);
+var Instrument_1 = __webpack_require__(24);
+var Note_1 = __webpack_require__(26);
 var privateHeaderMap = new WeakMap();
 /**
  * A Track is a collection of notes and controlChanges
@@ -3086,7 +3756,7 @@ exports.Track = Track;
 //# sourceMappingURL=Track.js.map
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3192,13 +3862,13 @@ exports.ControlChange = ControlChange;
 //# sourceMappingURL=ControlChange.js.map
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ControlChange_1 = __webpack_require__(19);
+var ControlChange_1 = __webpack_require__(22);
 /**
  * Automatically creates an alias for named control values using Proxies
  */
@@ -3229,13 +3899,13 @@ exports.createControlChanges = createControlChanges;
 //# sourceMappingURL=ControlChanges.js.map
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var InstrumentMaps_1 = __webpack_require__(22);
+var InstrumentMaps_1 = __webpack_require__(25);
 var privateTrackMap = new WeakMap();
 /**
  * Describes the midi instrument of a track
@@ -3328,7 +3998,7 @@ exports.Instrument = Instrument;
 //# sourceMappingURL=Instrument.js.map
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3496,7 +4166,7 @@ exports.drumKitByPatchID = {
 //# sourceMappingURL=InstrumentMaps.js.map
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3662,169 +4332,169 @@ exports.Note = Note;
 //# sourceMappingURL=Note.js.map
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(25);
-__webpack_require__(51);
-__webpack_require__(53);
-__webpack_require__(69);
-__webpack_require__(56);
-__webpack_require__(29);
-__webpack_require__(70);
-__webpack_require__(73);
-__webpack_require__(77);
-__webpack_require__(72);
-__webpack_require__(78);
-__webpack_require__(80);
-__webpack_require__(82);
-__webpack_require__(85);
-__webpack_require__(101);
-__webpack_require__(102);
-__webpack_require__(62);
-__webpack_require__(103);
-__webpack_require__(104);
-__webpack_require__(106);
-__webpack_require__(105);
-__webpack_require__(107);
-__webpack_require__(108);
-__webpack_require__(71);
-__webpack_require__(55);
-__webpack_require__(109);
+__webpack_require__(28);
 __webpack_require__(54);
+__webpack_require__(56);
+__webpack_require__(72);
+__webpack_require__(59);
+__webpack_require__(32);
+__webpack_require__(73);
+__webpack_require__(76);
+__webpack_require__(80);
+__webpack_require__(75);
 __webpack_require__(81);
-__webpack_require__(68);
-__webpack_require__(63);
-__webpack_require__(67);
+__webpack_require__(83);
+__webpack_require__(85);
+__webpack_require__(88);
+__webpack_require__(104);
+__webpack_require__(105);
+__webpack_require__(65);
+__webpack_require__(106);
+__webpack_require__(107);
+__webpack_require__(109);
+__webpack_require__(108);
 __webpack_require__(110);
 __webpack_require__(111);
+__webpack_require__(74);
+__webpack_require__(58);
 __webpack_require__(112);
+__webpack_require__(57);
+__webpack_require__(84);
+__webpack_require__(71);
+__webpack_require__(66);
+__webpack_require__(70);
 __webpack_require__(113);
 __webpack_require__(114);
-__webpack_require__(33);
-__webpack_require__(99);
 __webpack_require__(115);
 __webpack_require__(116);
-__webpack_require__(89);
-__webpack_require__(34);
-__webpack_require__(76);
 __webpack_require__(117);
-__webpack_require__(35);
-__webpack_require__(49);
-__webpack_require__(93);
-__webpack_require__(118);
-__webpack_require__(97);
-__webpack_require__(119);
-__webpack_require__(48);
-__webpack_require__(45);
 __webpack_require__(36);
+__webpack_require__(102);
+__webpack_require__(118);
+__webpack_require__(119);
 __webpack_require__(92);
-__webpack_require__(88);
-__webpack_require__(95);
-__webpack_require__(94);
+__webpack_require__(37);
+__webpack_require__(79);
 __webpack_require__(120);
+__webpack_require__(38);
+__webpack_require__(52);
+__webpack_require__(96);
+__webpack_require__(121);
+__webpack_require__(100);
 __webpack_require__(122);
+__webpack_require__(51);
+__webpack_require__(48);
+__webpack_require__(39);
+__webpack_require__(95);
+__webpack_require__(91);
+__webpack_require__(98);
+__webpack_require__(97);
 __webpack_require__(123);
-__webpack_require__(124);
+__webpack_require__(125);
 __webpack_require__(126);
 __webpack_require__(127);
 __webpack_require__(129);
 __webpack_require__(130);
-__webpack_require__(121);
-__webpack_require__(131);
 __webpack_require__(132);
 __webpack_require__(133);
+__webpack_require__(124);
 __webpack_require__(134);
 __webpack_require__(135);
 __webpack_require__(136);
 __webpack_require__(137);
+__webpack_require__(138);
 __webpack_require__(139);
 __webpack_require__(140);
-__webpack_require__(128);
+__webpack_require__(142);
 __webpack_require__(143);
-__webpack_require__(144);
-__webpack_require__(138);
-__webpack_require__(145);
+__webpack_require__(131);
 __webpack_require__(146);
 __webpack_require__(147);
+__webpack_require__(141);
 __webpack_require__(148);
 __webpack_require__(149);
 __webpack_require__(150);
 __webpack_require__(151);
 __webpack_require__(152);
-__webpack_require__(162);
-__webpack_require__(164);
-__webpack_require__(161);
+__webpack_require__(153);
+__webpack_require__(154);
+__webpack_require__(155);
 __webpack_require__(165);
-__webpack_require__(166);
-__webpack_require__(160);
-__webpack_require__(163);
 __webpack_require__(167);
+__webpack_require__(164);
 __webpack_require__(168);
 __webpack_require__(169);
+__webpack_require__(163);
+__webpack_require__(166);
 __webpack_require__(170);
-__webpack_require__(153);
-__webpack_require__(52);
-__webpack_require__(100);
-__webpack_require__(37);
-__webpack_require__(47);
-__webpack_require__(46);
-__webpack_require__(38);
 __webpack_require__(171);
-__webpack_require__(64);
-__webpack_require__(39);
-__webpack_require__(79);
-__webpack_require__(58);
-__webpack_require__(66);
-__webpack_require__(61);
 __webpack_require__(172);
-__webpack_require__(83);
-__webpack_require__(84);
-__webpack_require__(125);
-__webpack_require__(60);
-__webpack_require__(59);
 __webpack_require__(173);
-__webpack_require__(50);
-__webpack_require__(75);
-__webpack_require__(74);
-__webpack_require__(30);
-__webpack_require__(32);
-__webpack_require__(57);
-__webpack_require__(91);
-__webpack_require__(174);
-__webpack_require__(31);
-__webpack_require__(65);
-__webpack_require__(158);
-__webpack_require__(142);
-__webpack_require__(159);
-__webpack_require__(157);
-__webpack_require__(175);
-__webpack_require__(141);
-__webpack_require__(154);
-__webpack_require__(86);
-__webpack_require__(98);
-__webpack_require__(176);
-__webpack_require__(177);
-__webpack_require__(155);
 __webpack_require__(156);
-__webpack_require__(87);
-__webpack_require__(90);
-__webpack_require__(178);
-__webpack_require__(43);
-__webpack_require__(179);
-__webpack_require__(96);
-__webpack_require__(41);
-__webpack_require__(42);
-__webpack_require__(44);
+__webpack_require__(55);
+__webpack_require__(103);
 __webpack_require__(40);
-module.exports = __webpack_require__(26);
+__webpack_require__(50);
+__webpack_require__(49);
+__webpack_require__(41);
+__webpack_require__(174);
+__webpack_require__(67);
+__webpack_require__(42);
+__webpack_require__(82);
+__webpack_require__(61);
+__webpack_require__(69);
+__webpack_require__(64);
+__webpack_require__(175);
+__webpack_require__(86);
+__webpack_require__(87);
+__webpack_require__(128);
+__webpack_require__(63);
+__webpack_require__(62);
+__webpack_require__(176);
+__webpack_require__(53);
+__webpack_require__(78);
+__webpack_require__(77);
+__webpack_require__(33);
+__webpack_require__(35);
+__webpack_require__(60);
+__webpack_require__(94);
+__webpack_require__(177);
+__webpack_require__(34);
+__webpack_require__(68);
+__webpack_require__(161);
+__webpack_require__(145);
+__webpack_require__(162);
+__webpack_require__(160);
+__webpack_require__(178);
+__webpack_require__(144);
+__webpack_require__(157);
+__webpack_require__(89);
+__webpack_require__(101);
+__webpack_require__(179);
+__webpack_require__(180);
+__webpack_require__(158);
+__webpack_require__(159);
+__webpack_require__(90);
+__webpack_require__(93);
+__webpack_require__(181);
+__webpack_require__(46);
+__webpack_require__(182);
+__webpack_require__(99);
+__webpack_require__(44);
+__webpack_require__(45);
+__webpack_require__(47);
+__webpack_require__(43);
+module.exports = __webpack_require__(29);
 
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(29), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(32), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -3886,7 +4556,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -3895,7 +4565,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
  *  @license http://opensource.org/licenses/MIT MIT License
  *  @copyright 2014-2019 Yotam Mann
  */
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(28)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(version){
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(version){
 
 	"use strict";
 
@@ -4674,10 +5344,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(27)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(30)))
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4703,18 +5373,18 @@ module.exports = g;
 
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(module, exports) {
 
 module.exports = "13.4.9";
 
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30),
-	__webpack_require__(50), __webpack_require__(40), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33),
+	__webpack_require__(53), __webpack_require__(43), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -5209,11 +5879,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(40), __webpack_require__(45),
-	__webpack_require__(46), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(43), __webpack_require__(48),
+	__webpack_require__(49), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -5312,10 +5982,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(32), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(35), __webpack_require__(42)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -5453,10 +6123,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -5507,10 +6177,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.AudioNode is the base class for classes which process audio.
@@ -5769,10 +6439,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(35), __webpack_require__(36), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(38), __webpack_require__(39), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Wrapper around the native AudioContext.
@@ -6400,10 +7070,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -6545,10 +7215,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -6951,10 +7621,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(41)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported){
 		if (!Tone.global.hasOwnProperty("AudioContext") && Tone.global.hasOwnProperty("webkitAudioContext")){
@@ -7023,10 +7693,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 	if (Tone.supported){
 
 		if (!Tone.global.hasOwnProperty("OfflineAudioContext") && Tone.global.hasOwnProperty("webkitOfflineAudioContext")){
@@ -7053,10 +7723,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported && !Tone.global.AudioContext.prototype._native_createWaveShaper){
 
@@ -7118,10 +7788,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 40 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(41), __webpack_require__(43), __webpack_require__(44), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(44), __webpack_require__(46), __webpack_require__(47), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	///////////////////////////////////////////////////////////////////////////
 	//	TYPES
@@ -7343,10 +8013,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 41 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(42), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(45), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Time is a primitive type for encoding Time values.
@@ -7504,10 +8174,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 42 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.TimeBase is a flexible encoding of time
@@ -7861,10 +8531,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 43 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(42)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(45)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Frequency is a primitive type for encoding Frequency values.
@@ -8144,10 +8814,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 44 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(41)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(44)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.TransportTime is a the time along the Transport's
@@ -8186,10 +8856,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 45 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(40), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(43), __webpack_require__(36), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -8762,11 +9432,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 46 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(37), __webpack_require__(47),
-	__webpack_require__(34), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(40), __webpack_require__(50),
+	__webpack_require__(37), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported && !Tone.global.AudioContext.prototype.createConstantSource){
 
@@ -8824,10 +9494,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 47 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(48)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(51)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported){
 
@@ -8857,10 +9527,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(34), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(37), __webpack_require__(41)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Wrapper around the OfflineAudioContext
@@ -8949,10 +9619,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(45), __webpack_require__(40), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(48), __webpack_require__(43), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9021,10 +9691,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 50 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9105,10 +9775,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(33), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(36), __webpack_require__(55)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9254,10 +9924,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  AnalyserNode.getFloatTimeDomainData polyfill
@@ -9280,10 +9950,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(54), __webpack_require__(68), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(57), __webpack_require__(71), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Channel provides a channel strip interface with 
@@ -9420,10 +10090,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(55), __webpack_require__(67), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(58), __webpack_require__(70), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9529,11 +10199,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(56), __webpack_require__(62), __webpack_require__(63), __webpack_require__(64),
-	__webpack_require__(30), __webpack_require__(66), __webpack_require__(65), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(59), __webpack_require__(65), __webpack_require__(66), __webpack_require__(67),
+	__webpack_require__(33), __webpack_require__(69), __webpack_require__(68), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9591,11 +10261,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(57),
-	__webpack_require__(61), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(60),
+	__webpack_require__(64), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9716,10 +10386,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(58), __webpack_require__(59), __webpack_require__(30), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(61), __webpack_require__(62), __webpack_require__(33), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9795,10 +10465,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9866,10 +10536,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(60), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(63), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9913,10 +10583,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(45), __webpack_require__(49), __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(48), __webpack_require__(52), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -9984,10 +10654,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10035,10 +10705,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10117,10 +10787,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10186,11 +10856,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(62), __webpack_require__(65),
-	__webpack_require__(63), __webpack_require__(49), __webpack_require__(30), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(65), __webpack_require__(68),
+	__webpack_require__(66), __webpack_require__(52), __webpack_require__(33), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported && !Tone.global.AudioContext.prototype.createStereoPanner){
 
@@ -10298,10 +10968,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(49), __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(52), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Zero outputs 0's at audio-rate. The reason this has to be
@@ -10342,10 +11012,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10389,10 +11059,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10494,10 +11164,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Solo lets you isolate a specific audio stream. When
@@ -10657,10 +11327,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(45), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(48), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10784,10 +11454,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(71), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(74), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -10939,10 +11609,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(72), __webpack_require__(30), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(75), __webpack_require__(33), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11079,10 +11749,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11311,11 +11981,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(74), __webpack_require__(30),
-	__webpack_require__(45), __webpack_require__(76), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(77), __webpack_require__(33),
+	__webpack_require__(48), __webpack_require__(79), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11400,10 +12070,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 74 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(75), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(78), __webpack_require__(53)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class  Performs an exponential scaling on an input signal.
@@ -11510,10 +12180,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 75 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(58), __webpack_require__(60), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(61), __webpack_require__(63), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 	
@@ -11629,10 +12299,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 76 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(45), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(48), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11720,10 +12390,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 77 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(51), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(54), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class  Get the current waveform data of the connected audio source.
@@ -11796,11 +12466,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 78 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(79), __webpack_require__(57), 
-	__webpack_require__(30), __webpack_require__(40), __webpack_require__(76), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(82), __webpack_require__(60), 
+	__webpack_require__(33), __webpack_require__(43), __webpack_require__(79), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11921,10 +12591,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 79 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -11973,10 +12643,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 80 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(81), __webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(84), __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12095,10 +12765,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 81 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(29), __webpack_require__(75)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(32), __webpack_require__(78)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12224,10 +12894,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 82 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(78), __webpack_require__(83), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(81), __webpack_require__(86), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12332,10 +13002,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 83 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(84), __webpack_require__(57), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(87), __webpack_require__(60), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12395,10 +13065,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 84 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(60), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(63), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12463,11 +13133,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 85 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(86), __webpack_require__(75), __webpack_require__(33),
-	__webpack_require__(30), __webpack_require__(66), __webpack_require__(40), __webpack_require__(65)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(89), __webpack_require__(78), __webpack_require__(36),
+	__webpack_require__(33), __webpack_require__(69), __webpack_require__(43), __webpack_require__(68)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -12816,11 +13486,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 86 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(87),
-	__webpack_require__(88), __webpack_require__(98)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(90),
+	__webpack_require__(91), __webpack_require__(101)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -13296,11 +13966,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 87 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(88), __webpack_require__(67), __webpack_require__(97), __webpack_require__(40),
-	__webpack_require__(92), __webpack_require__(30), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(91), __webpack_require__(70), __webpack_require__(100), __webpack_require__(43),
+	__webpack_require__(95), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -13591,12 +14261,12 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 88 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(89), __webpack_require__(40), __webpack_require__(36),
-	__webpack_require__(35), __webpack_require__(49), __webpack_require__(93),
-	__webpack_require__(94), __webpack_require__(95)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(92), __webpack_require__(43), __webpack_require__(39),
+	__webpack_require__(38), __webpack_require__(52), __webpack_require__(96),
+	__webpack_require__(97), __webpack_require__(98)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -14405,11 +15075,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 89 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(90), __webpack_require__(92),
-	__webpack_require__(35), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(93), __webpack_require__(95),
+	__webpack_require__(38), __webpack_require__(37)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -14715,11 +15385,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 90 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(91), __webpack_require__(92),
-	__webpack_require__(36), __webpack_require__(45)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(94), __webpack_require__(95),
+	__webpack_require__(39), __webpack_require__(48)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -15083,10 +15753,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 91 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 * @class Tone.TickSignal extends Tone.Signal, but adds the capability
@@ -15318,10 +15988,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 92 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(36), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(39), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -15420,10 +16090,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 93 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -16024,10 +16694,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 94 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(95), __webpack_require__(96)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(98), __webpack_require__(99)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.TransportRepeatEvent is an internal class used by Tone.Transport
@@ -16162,10 +16832,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 95 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(96)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(99)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.TransportEvent is an internal class used by (Tone.Transport)[Transport]
@@ -16262,10 +16932,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 96 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(44)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Ticks is a primitive type for encoding Time values.
@@ -16358,10 +17028,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 97 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(67), __webpack_require__(34), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(70), __webpack_require__(37), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -16530,11 +17200,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 98 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(99), __webpack_require__(87), __webpack_require__(49),
-	__webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(102), __webpack_require__(90), __webpack_require__(52),
+	__webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Wrapper around the native fire-and-forget OscillatorNode. Adds the
@@ -16765,10 +17435,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 99 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(35), __webpack_require__(40), __webpack_require__(100)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(38), __webpack_require__(43), __webpack_require__(103)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17339,10 +18009,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 100 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  AudioBuffer.copyTo/FromChannel polyfill
@@ -17372,10 +18042,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 101 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(69), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(72), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17450,10 +18120,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 102 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(72), __webpack_require__(33), __webpack_require__(73)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(75), __webpack_require__(36), __webpack_require__(76)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17555,10 +18225,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 103 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(51), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(54), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17662,11 +18332,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 104 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(105), __webpack_require__(106),
-	__webpack_require__(69), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(108), __webpack_require__(109),
+	__webpack_require__(72), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17763,11 +18433,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 105 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(58), __webpack_require__(57), __webpack_require__(30),
-	__webpack_require__(63), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(61), __webpack_require__(60), __webpack_require__(33),
+	__webpack_require__(66), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17855,11 +18525,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 106 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(30), __webpack_require__(57), __webpack_require__(58),
-	__webpack_require__(62), __webpack_require__(49), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(33), __webpack_require__(60), __webpack_require__(61),
+	__webpack_require__(65), __webpack_require__(52), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -17970,10 +18640,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 107 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(62), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(65), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -18020,10 +18690,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 108 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(71), __webpack_require__(69), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(74), __webpack_require__(72), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -18145,11 +18815,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 109 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(56), __webpack_require__(62), __webpack_require__(63),
-	__webpack_require__(30), __webpack_require__(66), __webpack_require__(65), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(59), __webpack_require__(65), __webpack_require__(66),
+	__webpack_require__(33), __webpack_require__(69), __webpack_require__(68), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -18476,10 +19146,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 110 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(51), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(54), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class  Get the current waveform data of the connected audio source.
@@ -18551,10 +19221,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 111 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -18690,10 +19360,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 112 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -18821,10 +19491,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 113 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -19098,10 +19768,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 114 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -19182,10 +19852,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 115 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(99)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(102)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class A data structure for holding multiple buffers.
@@ -19353,10 +20023,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 116 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -19428,10 +20098,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 117 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -19547,11 +20217,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 118 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(56), __webpack_require__(62), __webpack_require__(63),
-	__webpack_require__(30), __webpack_require__(66), __webpack_require__(65)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(59), __webpack_require__(65), __webpack_require__(66),
+	__webpack_require__(33), __webpack_require__(69), __webpack_require__(68)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -19869,10 +20539,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 119 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(88), __webpack_require__(99), __webpack_require__(48), __webpack_require__(97)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(91), __webpack_require__(102), __webpack_require__(51), __webpack_require__(100)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  Generate a buffer by rendering all of the Tone.js code within the callback using the OfflineAudioContext.
@@ -19947,10 +20617,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 120 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(85), __webpack_require__(72)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(88), __webpack_require__(75)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20154,10 +20824,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 121 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(56), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(59), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20258,10 +20928,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 122 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(85), __webpack_require__(55)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(88), __webpack_require__(58)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20416,11 +21086,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 123 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(78), __webpack_require__(74),
-	__webpack_require__(121), __webpack_require__(72)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(81), __webpack_require__(77),
+	__webpack_require__(124), __webpack_require__(75)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20632,10 +21302,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 124 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(57), __webpack_require__(125)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(60), __webpack_require__(128)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20734,10 +21404,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 125 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(60), __webpack_require__(57)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(63), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20847,10 +21517,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 126 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -20991,10 +21661,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 127 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(85), __webpack_require__(128), __webpack_require__(76)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(88), __webpack_require__(131), __webpack_require__(79)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21210,11 +21880,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 128 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(63),
-	__webpack_require__(62), __webpack_require__(56)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(66),
+	__webpack_require__(65), __webpack_require__(59)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21326,10 +21996,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 129 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(99), __webpack_require__(121)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(102), __webpack_require__(124)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21475,10 +22145,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 130 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21587,10 +22257,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 131 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(132), __webpack_require__(30), __webpack_require__(76)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(135), __webpack_require__(33), __webpack_require__(79)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21667,11 +22337,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 132 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(30), 
-	__webpack_require__(60), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(33), 
+	__webpack_require__(63), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 	
@@ -21737,11 +22407,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 133 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(102), __webpack_require__(128),
-	__webpack_require__(30), __webpack_require__(63), __webpack_require__(62), __webpack_require__(74)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(105), __webpack_require__(131),
+	__webpack_require__(33), __webpack_require__(66), __webpack_require__(65), __webpack_require__(77)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -21900,10 +22570,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 134 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(73), __webpack_require__(128), __webpack_require__(75)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(76), __webpack_require__(131), __webpack_require__(78)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22052,10 +22722,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 135 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(105), __webpack_require__(106)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(108), __webpack_require__(109)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22148,10 +22818,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 136 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(85), __webpack_require__(72), __webpack_require__(128)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(88), __webpack_require__(75), __webpack_require__(131)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22358,10 +23028,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 137 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(138), __webpack_require__(30), __webpack_require__(76)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(141), __webpack_require__(33), __webpack_require__(79)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22462,10 +23132,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 138 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(128), __webpack_require__(132)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(131), __webpack_require__(135)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22535,11 +23205,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 139 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(85), __webpack_require__(56),
-	__webpack_require__(30), __webpack_require__(132), __webpack_require__(76)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(88), __webpack_require__(59),
+	__webpack_require__(33), __webpack_require__(135), __webpack_require__(79)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22774,11 +23444,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 140 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(119), __webpack_require__(72), __webpack_require__(62),
-	__webpack_require__(141), __webpack_require__(49), __webpack_require__(129)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(122), __webpack_require__(75), __webpack_require__(65),
+	__webpack_require__(144), __webpack_require__(52), __webpack_require__(132)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -22880,11 +23550,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 141 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(99),
-	__webpack_require__(142)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(102),
+	__webpack_require__(145)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -23145,11 +23815,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 142 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(99), __webpack_require__(87), __webpack_require__(49),
-	__webpack_require__(33), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(102), __webpack_require__(90), __webpack_require__(52),
+	__webpack_require__(36), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Wrapper around the native BufferSourceNode.
@@ -23554,10 +24224,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 143 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(128), __webpack_require__(132), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(131), __webpack_require__(135), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -23625,11 +24295,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 144 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(135), __webpack_require__(30),
-	__webpack_require__(60), __webpack_require__(57)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(138), __webpack_require__(33),
+	__webpack_require__(63), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -23743,10 +24413,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 145 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(85), __webpack_require__(128)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(88), __webpack_require__(131)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -23951,10 +24621,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 146 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(121), __webpack_require__(76), __webpack_require__(85)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(124), __webpack_require__(79), __webpack_require__(88)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -24060,10 +24730,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 147 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(88), __webpack_require__(40), __webpack_require__(92)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(91), __webpack_require__(43), __webpack_require__(95)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -24503,10 +25173,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 148 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(147)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(150)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Loop creates a looped callback at the 
@@ -24751,10 +25421,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 149 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(147), __webpack_require__(40), __webpack_require__(88)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(150), __webpack_require__(43), __webpack_require__(91)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -25275,10 +25945,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 150 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(148), __webpack_require__(113)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(151), __webpack_require__(116)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Pattern arpeggiates between the given notes
@@ -25407,10 +26077,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 151 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(149), __webpack_require__(88)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(152), __webpack_require__(91)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -25576,11 +26246,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 152 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(153), __webpack_require__(30), __webpack_require__(60),
-	__webpack_require__(160), __webpack_require__(66), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(156), __webpack_require__(33), __webpack_require__(63),
+	__webpack_require__(163), __webpack_require__(69), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -25788,11 +26458,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 153 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(25), __webpack_require__(154),
-	__webpack_require__(30), __webpack_require__(160)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(28), __webpack_require__(157),
+	__webpack_require__(33), __webpack_require__(163)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -25918,11 +26588,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 154 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(86), __webpack_require__(155), __webpack_require__(156),
-	__webpack_require__(157), __webpack_require__(158), __webpack_require__(159)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(89), __webpack_require__(158), __webpack_require__(159),
+	__webpack_require__(160), __webpack_require__(161), __webpack_require__(162)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -26440,11 +27110,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 155 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(86),
-	__webpack_require__(30), __webpack_require__(31), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(89),
+	__webpack_require__(33), __webpack_require__(34), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -26656,11 +27326,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 156 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(155),
-	__webpack_require__(86), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(158),
+	__webpack_require__(89), __webpack_require__(63)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -26862,11 +27532,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 157 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(86),
-	__webpack_require__(60), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(89),
+	__webpack_require__(63), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -27142,11 +27812,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 158 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(86), __webpack_require__(60),
-	__webpack_require__(49), __webpack_require__(66)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(89), __webpack_require__(63),
+	__webpack_require__(52), __webpack_require__(69)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -27414,11 +28084,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 159 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(86),
-	__webpack_require__(60), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(89),
+	__webpack_require__(63), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -27766,10 +28436,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 160 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(161), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(164), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -27899,10 +28569,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 161 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(40), __webpack_require__(97)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(43), __webpack_require__(100)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -28065,11 +28735,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 162 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(163), __webpack_require__(85), __webpack_require__(30),
-	__webpack_require__(60), __webpack_require__(160), __webpack_require__(45)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(166), __webpack_require__(88), __webpack_require__(33),
+	__webpack_require__(63), __webpack_require__(163), __webpack_require__(48)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -28282,11 +28952,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 163 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(25), __webpack_require__(80), __webpack_require__(154),
-	__webpack_require__(30), __webpack_require__(72), __webpack_require__(160)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(28), __webpack_require__(83), __webpack_require__(157),
+	__webpack_require__(33), __webpack_require__(75), __webpack_require__(163)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -28456,11 +29126,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 164 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(153), __webpack_require__(30), __webpack_require__(60),
-	__webpack_require__(160)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(156), __webpack_require__(33), __webpack_require__(63),
+	__webpack_require__(163)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -28673,11 +29343,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 165 */
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(154), __webpack_require__(161),
-	__webpack_require__(25)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(157), __webpack_require__(164),
+	__webpack_require__(28)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -28809,12 +29479,12 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 166 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(161), __webpack_require__(157), __webpack_require__(72),
-	__webpack_require__(80), __webpack_require__(25), __webpack_require__(49),
-	__webpack_require__(75), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(164), __webpack_require__(160), __webpack_require__(75),
+	__webpack_require__(83), __webpack_require__(28), __webpack_require__(52),
+	__webpack_require__(78), __webpack_require__(63)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  Inharmonic ratio of frequencies based on the Roland TR-808
@@ -29121,11 +29791,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 167 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(25), __webpack_require__(80),
-	__webpack_require__(141), __webpack_require__(30), __webpack_require__(72), __webpack_require__(161)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(28), __webpack_require__(83),
+	__webpack_require__(144), __webpack_require__(33), __webpack_require__(75), __webpack_require__(164)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -29273,10 +29943,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 168 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(161), __webpack_require__(141), __webpack_require__(102)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(164), __webpack_require__(144), __webpack_require__(105)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -29400,10 +30070,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 169 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(153), __webpack_require__(87)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(156), __webpack_require__(90)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -29698,10 +30368,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 170 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(161), __webpack_require__(115), __webpack_require__(142)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(164), __webpack_require__(118), __webpack_require__(145)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 * @class Automatically interpolates between a set of pitched samples. Pass in an object which maps the note's pitch or midi value to the url, then you can trigger the attack and release of that note like other instruments. By automatically repitching the samples, it is possible to play pitches which were not explicitly included which can save loading time.
@@ -30004,10 +30674,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 171 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	if (Tone.supported){
 		if (!OscillatorNode.prototype.setPeriodicWave){
@@ -30023,10 +30693,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 172 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(31), __webpack_require__(30)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(34), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -30071,10 +30741,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 173 */
+/* 176 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(58), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(61), __webpack_require__(63)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -30188,10 +30858,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 174 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(88), __webpack_require__(30), __webpack_require__(44)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(91), __webpack_require__(33), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 * @class Tone.TransportTimelineSignal extends Tone.Signal, but adds the ability to synchronize the signal to the signal to the Tone.Transport
@@ -30380,10 +31050,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 175 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(87), __webpack_require__(99), __webpack_require__(142)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(90), __webpack_require__(102), __webpack_require__(145)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 * @class Tone.GrainPlayer implements [granular synthesis](https://en.wikipedia.org/wiki/Granular_synthesis).
@@ -30720,11 +31390,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 176 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(99), __webpack_require__(87), __webpack_require__(90),
-	__webpack_require__(142)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(102), __webpack_require__(90), __webpack_require__(93),
+	__webpack_require__(145)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -31193,10 +31863,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 177 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(176), __webpack_require__(67), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(179), __webpack_require__(70), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -31475,10 +32145,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 178 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(67), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(70), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	"use strict";
 
@@ -31769,10 +32439,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 179 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(26), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(Tone){
 
 	/**
 	 *  @class Tone.Midi is a primitive type for encoding Time values.
@@ -31881,7 +32551,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 180 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31901,29 +32571,31 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
-var header_1 = __webpack_require__(181);
-var body_1 = __webpack_require__(182);
-var left_1 = __webpack_require__(184);
-var event_1 = __webpack_require__(3);
+var header_1 = __webpack_require__(184);
+var body_1 = __webpack_require__(185);
+var left_1 = __webpack_require__(187);
+var event_1 = __webpack_require__(6);
+var config_1 = __webpack_require__(3);
 var UI = (function (_super) {
     __extends(UI, _super);
-    function UI(container, headHeight, leftWidth) {
-        if (headHeight === void 0) { headHeight = 40; }
-        if (leftWidth === void 0) { leftWidth = 80; }
-        var _this = _super.call(this, container) || this;
+    function UI(container, theme, headHeight, leftWidth) {
+        if (headHeight === void 0) { headHeight = config_1.config.ui.headHeight; }
+        if (leftWidth === void 0) { leftWidth = config_1.config.ui.leftWidth; }
+        var _this = _super.call(this, container, theme) || this;
         _this.headHeight = headHeight;
         _this.leftWidth = leftWidth;
         _this.hearder = new header_1.Header(leftWidth, 0, container.width - leftWidth, headHeight);
         _this.left = new left_1.Left(0, headHeight, leftWidth, container.height - headHeight);
         _this.body = new body_1.Body(leftWidth, headHeight, container.width - leftWidth, container.height - headHeight);
-        _this.hearder.borderWith = 1;
+        _this.hearder.borderWith = config_1.config.ui.hearder.borderWith;
         _this.hearder.dw = _this.body.dw;
-        _this.left.borderWith = 1;
+        _this.left.borderWith = config_1.config.ui.left.borderWith;
         _this.body.borderWith = 0;
         container.addChild(_this.body);
         container.addChild(_this.hearder);
         container.addChild(_this.left);
         _this.bind();
+        _this.setTheme(theme);
         return _this;
     }
     UI.prototype.bind = function () {
@@ -31983,9 +32655,9 @@ var UI = (function (_super) {
     };
     UI.prototype.setData = function (data) {
         _super.prototype.setData.call(this, data);
-        var bpm = 2;
+        var bpm = config_1.config.DEFAULT_BMP;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
         }
         this.body.bpm = bpm;
         this.hearder.bpm = bpm;
@@ -32028,13 +32700,21 @@ var UI = (function (_super) {
         this.hearder.visible = true;
         this.left.visible = true;
     };
+    UI.prototype.setTheme = function (theme) {
+        _super.prototype.setTheme.call(this, theme);
+        this.body.setStyle(theme.ui.body);
+        this.left.setStyle(theme.ui.left);
+        this.hearder.setStyle(theme.ui.header);
+        this.body.listView.setStyle(theme.ui.body.item);
+        this.left.listView.setStyle(theme.ui.left.item);
+    };
     return UI;
 }(base_1.base.BaseUI));
 exports.UI = UI;
 
 
 /***/ }),
-/* 181 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32054,21 +32734,38 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
+var config_1 = __webpack_require__(3);
 var Header = (function (_super) {
     __extends(Header, _super);
     function Header() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.dw = 8;
+        _this.dw = config_1.config.ui.hearder.dw;
         _this.position = 0;
         _this.offsetX = 0;
-        _this.bate = 4;
+        _this.bate = config_1.config.ui.hearder.bate;
         _this.bpm = 0;
-        _this.lineWidth = 0.4;
+        _this.lineWidth = config_1.config.ui.hearder.lineWidth;
         _this.lineColor = "#000000";
+        _this.textWidth = config_1.config.ui.hearder.textWidth;
+        _this.textColor = "#000000";
         _this.indexColor = "#ff0000";
-        _this.indexWidth = 0.5;
+        _this.indexWidth = config_1.config.ui.hearder.indexWidth;
         return _this;
     }
+    Header.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
+    };
     Header.prototype.onDraw = function (context) {
         _super.prototype.onDraw.call(this, context);
         if (!this.parent)
@@ -32080,11 +32777,19 @@ var Header = (function (_super) {
         for (var x = 0; x + this.offsetX < this.width; x += this.dw) {
             context.beginPath();
             if (i % this.bate == 0) {
+                context.strokeStyle = this.lineColor;
+                context.lineWidth = this.lineWidth;
                 context.moveTo(box.left + (this.offsetX + x) * box.sx, box.top);
                 context.lineTo(box.left + (this.offsetX + x) * box.sx, box.top + this.height * box.sy);
+                context.stroke();
+                context.beginPath();
+                context.strokeStyle = this.textColor;
+                context.lineWidth = this.textWidth;
                 context.strokeText("" + (i / this.bate + 1), box.left + (this.offsetX + x) * box.sx + this.lineWidth * 4, box.top + box.height * 2 / 5);
             }
             else {
+                context.strokeStyle = this.lineColor;
+                context.lineWidth = this.lineWidth;
                 context.moveTo(box.left + (this.offsetX + x) * box.sx, box.top + box.height / 2);
                 context.lineTo(box.left + (this.offsetX + x) * box.sx, box.top + box.height * 3 / 2);
             }
@@ -32104,7 +32809,7 @@ exports.Header = Header;
 
 
 /***/ }),
-/* 182 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32124,7 +32829,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
-var item_1 = __webpack_require__(183);
+var item_1 = __webpack_require__(186);
+var config_1 = __webpack_require__(3);
 var Body = (function (_super) {
     __extends(Body, _super);
     function Body(x, y, width, height) {
@@ -32133,26 +32839,27 @@ var Body = (function (_super) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         var _this = _super.call(this, x, y, width, height) || this;
-        _this.dw = 8;
-        _this.paddingRight = 40;
+        _this.dw = config_1.config.ui.body.dw;
+        _this.paddingRight = config_1.config.ui.body.paddingRight;
         _this.offsetX = 0;
-        _this.bate = 4;
+        _this.bate = config_1.config.ui.body.bate;
         _this.bpm = 0;
         _this.position = 0;
-        _this.lineWidth = 0.4;
+        _this.lineWidth = config_1.config.ui.body.lineWidth;
         _this.lineColor = "#000000";
         _this.barColor = "#000000";
+        _this.bgBarColor = "#ffffff";
         _this.indexColor = "#ff0000";
-        _this.indexWidth = 0.5;
+        _this.indexWidth = config_1.config.ui.body.indexWidth;
         _this.duration = 0;
         _this.borderWith = 0;
-        _this.listView = new item_1.ListView(_this, [], 60)
+        _this.listView = new item_1.ListView(_this, [], config_1.config.ui.body.listView.itemHeight)
             .cbk(function () {
             var item = new item_1.MidiItem();
             item.dw = _this.dw * _this.bpm;
             return item;
         });
-        _this.listView.scrollBarWidth = 4;
+        _this.listView.scrollBarWidth = config_1.config.ui.body.listView.scrollBarWidth;
         return _this;
     }
     Object.defineProperty(Body.prototype, "contentHeight", {
@@ -32211,13 +32918,30 @@ var Body = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Body.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.bgBarColor) {
+            this.bgBarColor = style.bgBarColor;
+        }
+        if (style.barColor) {
+            this.barColor = style.barColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+    };
     Body.prototype.setData = function (data) {
         this.listView.setData(data);
         this.listView.offsetY = 0;
         this.listView.offsetX = 0;
         this.offsetX = 0;
         this.position = 0;
-        this.dw = 8;
+        this.dw = config_1.config.ui.body.dw;
         this.listView.refresh();
     };
     Body.prototype.onResize = function () {
@@ -32246,17 +32970,24 @@ var Body = (function (_super) {
         context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
         context.stroke();
         if (this.height < this.contentHeight) {
-            context.beginPath();
-            context.fillStyle = this.barColor;
-            context.fillRect(box.left + box.width * box.sx - 4, box.top - this.listView.offsetY * this.scrollSpeedY * box.sy, 4, this.scrollBarHeight * box.sy);
-        }
-        if (this.width < this.contentWidth) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top, config_1.config.DEFAULT_BAR_WIDTH, box.height * box.sy);
             context.beginPath();
             context.strokeStyle = this.barColor;
-            context.strokeRect(box.left, box.top + box.height * box.sy - 4, box.width * box.sx, 4);
+            context.strokeRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top, config_1.config.DEFAULT_BAR_WIDTH, box.height * box.sy);
             context.stroke();
             context.fillStyle = this.barColor;
-            context.fillRect(box.left - this.listView.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - 4, this.scrollBarWidth * box.sx, 4);
+            context.fillRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top - this.listView.offsetY * this.scrollSpeedY * box.sy, config_1.config.DEFAULT_BAR_WIDTH, this.scrollBarHeight * box.sy);
+        }
+        if (this.width < this.contentWidth) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, box.width * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+            context.beginPath();
+            context.strokeStyle = this.barColor;
+            context.strokeRect(box.left, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, box.width * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+            context.stroke();
+            context.fillStyle = this.barColor;
+            context.fillRect(box.left - this.listView.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
         }
     };
     return Body;
@@ -32265,7 +32996,7 @@ exports.Body = Body;
 
 
 /***/ }),
-/* 183 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32286,7 +33017,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
 var data_1 = __webpack_require__(1);
-var event_1 = __webpack_require__(3);
+var event_1 = __webpack_require__(6);
+var config_1 = __webpack_require__(3);
 var Item = (function (_super) {
     __extends(Item, _super);
     function Item(x, y, width, height) {
@@ -32326,6 +33058,14 @@ var ListView = (function () {
         this.container = container;
         this.refresh();
     }
+    ListView.prototype.setStyle = function (style) {
+        if (style) {
+            this.style = style;
+            this.views.forEach(function (view) {
+                view.setStyle(style);
+            });
+        }
+    };
     ListView.prototype.setData = function (data) {
         this.data = data;
     };
@@ -32356,6 +33096,9 @@ var ListView = (function () {
             var sw = 0;
             if (this.container.height < this.contentHeight) {
                 sw = this.scrollBarWidth;
+            }
+            if (this.style) {
+                item.setStyle(this.style);
             }
             item.set(0, this.offsetY + i * this.itemHeight, this.container.width - sw, this.itemHeight);
             item["offsetX"] = this.offsetX;
@@ -32390,10 +33133,23 @@ var MidiItem = (function (_super) {
         _this.offsetX = 0;
         _this.lineColor = "#000000";
         _this.lineWidth = 2;
+        _this.textWidth = config_1.config.ui.body.listView.item.textWidth;
+        _this.textColor = "#000000";
         _this.borderWith = 1;
         _this.borderColor = "#666666";
         return _this;
     }
+    MidiItem.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
+    };
     MidiItem.prototype.onDraw = function (context) {
         if (this.recycle || !this.parent)
             return;
@@ -32402,8 +33158,8 @@ var MidiItem = (function (_super) {
             return;
         var box = this.box;
         var eh = box.height / data_1.Tone.length;
-        context.strokeStyle = "#00ff00";
-        context.lineWidth = 0.5;
+        context.strokeStyle = this.textColor;
+        context.lineWidth = this.textWidth;
         context.font = "14px";
         var s = (this.data["instrument"] || {})["number"] || "" + "";
         if (s) {
@@ -32443,10 +33199,19 @@ var HeadInfoItem = (function (_super) {
         var _this = _super.call(this, x, y, width, height) || this;
         _this.textColor = "#000000";
         _this.font = "16px";
+        _this.textWidth = config_1.config.ui.left.listView.item.textWidth;
         _this.borderWith = 1;
         _this.borderColor = "#aaaaaa";
         return _this;
     }
+    HeadInfoItem.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.textColor) {
+            this.textColor = style.textColor;
+        }
+    };
     HeadInfoItem.prototype.onDraw = function (context) {
         if (this.recycle || !this.parent)
             return;
@@ -32459,6 +33224,7 @@ var HeadInfoItem = (function (_super) {
         var s = (this.data["instrument"] || {})["number"];
         var arr = data_1.MusicalInstrumentData[s];
         if (arr && arr.length > 0) {
+            context.lineWidth = this.textWidth;
             context.strokeText(arr[1], box.left + 4, box.top + box.height / 2, box.width);
         }
     };
@@ -32468,7 +33234,7 @@ exports.HeadInfoItem = HeadInfoItem;
 
 
 /***/ }),
-/* 184 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32488,7 +33254,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
-var item_1 = __webpack_require__(183);
+var item_1 = __webpack_require__(186);
+var config_1 = __webpack_require__(3);
 var Left = (function (_super) {
     __extends(Left, _super);
     function Left(x, y, width, height) {
@@ -32500,10 +33267,18 @@ var Left = (function (_super) {
         _this.lineWidth = 0.4;
         _this.lineColor = "#000000";
         _this.borderWith = 0;
-        _this.listView = new item_1.ListView(_this, [], 60)
+        _this.listView = new item_1.ListView(_this, [], config_1.config.ui.left.listView.itemHeight)
             .cbk(function () { return new item_1.HeadInfoItem(); });
         return _this;
     }
+    Left.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+    };
     Left.prototype.setData = function (data) {
         this.listView.setData(data);
         this.listView.offsetY = 0;
@@ -32519,56 +33294,7 @@ exports.Left = Left;
 
 
 /***/ }),
-/* 185 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function clone(data) {
-    if (!data)
-        return undefined;
-    var d = JSON.parse(JSON.stringify(data));
-    for (var key in data) {
-        if (typeof data[key] === "function") {
-            d[key] = data[key];
-        }
-    }
-    return d;
-}
-exports.clone = clone;
-function isString(data) {
-    return typeof data === "string";
-}
-exports.isString = isString;
-function isNumber(data) {
-    return typeof data === "number";
-}
-exports.isNumber = isNumber;
-function isArray(data) {
-    return Array.isArray(data);
-}
-exports.isArray = isArray;
-function isBool(data) {
-    return typeof data === "boolean";
-}
-exports.isBool = isBool;
-function isFunction(data) {
-    return typeof data === "function";
-}
-exports.isFunction = isFunction;
-function copyCss(cmp, css) {
-    if (!cmp || !css)
-        return;
-    for (var key in css) {
-        cmp[key] = css;
-    }
-}
-exports.copyCss = copyCss;
-
-
-/***/ }),
-/* 186 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32587,39 +33313,42 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var Tone = __webpack_require__(24);
+var Tone = __webpack_require__(27);
 var base_1 = __webpack_require__(2);
-var left_1 = __webpack_require__(187);
-var header_1 = __webpack_require__(181);
-var body_1 = __webpack_require__(188);
-var event_1 = __webpack_require__(3);
-var views_1 = __webpack_require__(4);
+var left_1 = __webpack_require__(189);
+var header_1 = __webpack_require__(184);
+var body_1 = __webpack_require__(190);
+var event_1 = __webpack_require__(6);
+var views_1 = __webpack_require__(7);
+var config_1 = __webpack_require__(3);
 var DUI = (function (_super) {
     __extends(DUI, _super);
-    function DUI(container, headHeight, leftWidth) {
-        if (headHeight === void 0) { headHeight = 40; }
-        if (leftWidth === void 0) { leftWidth = 70; }
-        var _this = _super.call(this, container) || this;
+    function DUI(container, theme, headHeight, leftWidth) {
+        if (headHeight === void 0) { headHeight = config_1.config.dui.headHeight; }
+        if (leftWidth === void 0) { leftWidth = config_1.config.dui.leftWidth; }
+        var _this = _super.call(this, container, theme) || this;
         _this.headHeight = headHeight;
         _this.leftWidth = leftWidth;
         _this.body = new body_1.Body(leftWidth, headHeight, container.width - leftWidth, container.height - headHeight);
         _this.body.borderWith = 0;
         _this.left = new left_1.Left(0, _this.headHeight, _this.leftWidth, _this.container.height - _this.headHeight);
-        _this.left.borderWith = 1;
-        _this.left.lineWidth = 1;
+        _this.left.borderWith = config_1.config.dui.left.borderWith;
+        _this.left.lineWidth = config_1.config.dui.left.lineWidth;
         _this.hearder = new header_1.Header(leftWidth, 0, container.width - leftWidth, headHeight);
-        _this.hearder.borderWith = 1;
-        _this.hearder.dw = _this.body.dw = 40;
+        _this.hearder.borderWith = config_1.config.dui.hearder.borderWith;
+        _this.hearder.dw = _this.body.dw = config_1.config.dui.body.dw;
         _this.left.dh = _this.body.dh * 82 / 48;
-        var closeBtn = new views_1.views.Button(10, 10, 40, 20);
+        var closeBtn = new views_1.views.Button(config_1.config.dui.closeBtn.x, config_1.config.dui.closeBtn.y, config_1.config.dui.closeBtn.width, config_1.config.dui.closeBtn.height);
         closeBtn.text = "关 闭";
-        closeBtn.borderWith = 0.4;
+        closeBtn.borderWith = config_1.config.dui.closeBtn.borderWith;
+        closeBtn.radius = config_1.config.dui.closeBtn.radius;
         _this.closeBtn = closeBtn;
         container.addChild(_this.hearder);
         container.addChild(_this.left);
         container.addChild(_this.body);
         container.addChild(_this.closeBtn);
         _this.bind();
+        _this.setTheme(theme);
         return _this;
     }
     DUI.prototype.bind = function () {
@@ -32673,7 +33402,7 @@ var DUI = (function (_super) {
                 return;
             var note = self.body.hit(eobj.data.x, eobj.data.y);
             if (note && self.synth) {
-                var now = Tone.now() + 0.1;
+                var now = Tone.now() + config_1.config.dui.toneDelay;
                 self.left.hitKey(note.name, note.duration * 1000);
                 self.synth.triggerAttackRelease(note.name, note.duration, now, note.velocity);
             }
@@ -32684,7 +33413,7 @@ var DUI = (function (_super) {
                 return;
             var name = self.left.hit(eobj.data.x, eobj.data.y);
             if (name && self.synth) {
-                var now = Tone.now() + 0.1;
+                var now = Tone.now() + config_1.config.dui.toneDelay;
                 self.synth.triggerAttackRelease(name, 0.4, now);
             }
         };
@@ -32730,16 +33459,16 @@ var DUI = (function (_super) {
     };
     DUI.prototype.setData = function (data) {
         _super.prototype.setData.call(this, data);
-        var bpm = 2;
+        var bpm = config_1.config.DEFAULT_BMP;
         if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || 120) * 4;
+            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
         }
         this.body.bpm = bpm;
         this.hearder.bpm = bpm;
         this.body.duration = this.data["duration"] || 0;
         this.body.setData(this.data.tracks[0].notes);
         console.log(this.data.tracks[0].notes);
-        this.hearder.dw = this.body.dw = 40;
+        this.hearder.dw = this.body.dw = config_1.config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -32747,7 +33476,7 @@ var DUI = (function (_super) {
     };
     DUI.prototype.setNodesData = function (data) {
         this.body.setData(data);
-        this.hearder.dw = this.body.dw = 40;
+        this.hearder.dw = this.body.dw = config_1.config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -32761,13 +33490,20 @@ var DUI = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    DUI.prototype.setTheme = function (theme) {
+        _super.prototype.setTheme.call(this, theme);
+        this.body.setStyle(theme.dui.body);
+        this.left.setStyle(theme.dui.left);
+        this.hearder.setStyle(theme.dui.header);
+        this.closeBtn.setStyle(theme.dui.closeBtn);
+    };
     return DUI;
 }(base_1.base.BaseUI));
 exports.DUI = DUI;
 
 
 /***/ }),
-/* 187 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32788,7 +33524,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
 var data_1 = __webpack_require__(1);
-var event_1 = __webpack_require__(3);
+var event_1 = __webpack_require__(6);
 var Left = (function (_super) {
     __extends(Left, _super);
     function Left() {
@@ -32799,13 +33535,32 @@ var Left = (function (_super) {
         _this.blackColor = "#000000";
         _this.whiteColor = "#ffffff";
         _this.keyColor = "#ff0000";
+        _this.indexColor = "#ff0000";
         _this.selectKey = {};
         _this.rects = [];
         return _this;
     }
     Left.prototype.init = function () {
         _super.prototype.init.call(this);
-        this.borderColor = "#333333";
+        this.borderColor = "#666666";
+    };
+    Left.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.blackColor) {
+            this.blackColor = style.blackColor;
+        }
+        if (style.whiteColor) {
+            this.whiteColor = style.whiteColor;
+        }
+        if (style.hitColor) {
+            this.keyColor = style.hitColor;
+            this.indexColor = style.hitColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
     };
     Left.prototype.onDraw = function (context) {
         if (this.parent == null || !this.visible)
@@ -32858,7 +33613,7 @@ var Left = (function (_super) {
                 break;
             var t_1 = data_1.Tone[yarr[i].i];
             if (this.selectKey[t_1]) {
-                context.fillStyle = this.keyColor;
+                context.fillStyle = this.indexColor;
             }
             else {
                 context.fillStyle = this.blackColor;
@@ -32903,7 +33658,7 @@ exports.Left = Left;
 
 
 /***/ }),
-/* 188 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32924,18 +33679,21 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var base_1 = __webpack_require__(2);
 var data_1 = __webpack_require__(1);
+var config_1 = __webpack_require__(3);
 var Body = (function (_super) {
     __extends(Body, _super);
     function Body() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.dh = 8;
-        _this.dw = 8;
+        _this.dh = config_1.config.dui.body.dh;
+        _this.dw = config_1.config.dui.body.dw;
         _this.lineColor = "#cccccc";
-        _this.lineWidth = 1;
+        _this.lineWidth = config_1.config.dui.body.lineWidth;
         _this.barColor = "#000000";
+        _this.blockColor = "#000000";
         _this.hitColor = "#ff0000";
+        _this.bgBarColor = "#ffffff";
         _this.indexColor = "#ff0000";
-        _this.indexWidth = 0.5;
+        _this.indexWidth = config_1.config.dui.body.indexWidth;
         _this.rects = [];
         _this.offsetX = 0;
         _this.offsetY = 0;
@@ -32943,16 +33701,39 @@ var Body = (function (_super) {
         _this.duration = 0;
         _this.bpm = 0;
         _this.position = 0;
-        _this.paddingRight = 10;
+        _this.paddingRight = config_1.config.dui.body.paddingRight;
         _this.hitIndex = -1;
         return _this;
     }
+    Body.prototype.setStyle = function (style) {
+        _super.prototype.setStyle.call(this, style);
+        if (!style)
+            return;
+        if (style.lineColor) {
+            this.lineColor = style.lineColor;
+        }
+        if (style.barColor) {
+            this.barColor = style.barColor;
+        }
+        if (style.hitColor) {
+            this.hitColor = style.hitColor;
+        }
+        if (style.indexColor) {
+            this.indexColor = style.indexColor;
+        }
+        if (style.bgBarColor) {
+            this.bgBarColor = style.bgBarColor;
+        }
+        if (style.blockColor) {
+            this.blockColor = style.blockColor;
+        }
+    };
     Body.prototype.setData = function (nodes) {
         this.nodes = nodes;
         this.offsetX = 0;
         this.offsetY = 0;
         this.position = 0;
-        this.dw = 8;
+        this.dw = config_1.config.dui.body.dw;
         this.hitIndex = -1;
     };
     Body.prototype.init = function () {
@@ -33034,29 +33815,13 @@ var Body = (function (_super) {
             context.lineTo(box.left + box.width, box.top + +(this.offsetY + i * this.dh) * box.sy);
             context.stroke();
         }
-        if (this.height < this.contentHeight) {
-            context.beginPath();
-            context.strokeStyle = this.barColor;
-            context.strokeRect(box.left + box.width * box.sx - 4, box.top, 4, box.height * box.sy);
-            context.stroke();
-            context.fillStyle = this.barColor;
-            context.fillRect(box.left + box.width * box.sx - 4, box.top - this.offsetY * this.scrollSpeedY * box.sy, 4, this.scrollBarHeight * box.sy);
-        }
-        if (this.width < this.contentWidth) {
-            context.beginPath();
-            context.strokeStyle = this.barColor;
-            context.strokeRect(box.left, box.top + box.height * box.sy - 4, box.width * box.sx, 4);
-            context.stroke();
-            context.fillStyle = this.barColor;
-            context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - 4, this.scrollBarWidth * box.sx, 4);
-        }
         this.rects = [];
         for (var i = 0; i < this.nodes.length; i++) {
             if (this.hitIndex === i) {
                 context.fillStyle = this.hitColor;
             }
             else {
-                context.fillStyle = this.barColor;
+                context.fillStyle = this.blockColor;
             }
             var node = this.nodes[i];
             var yy = data_1.Tone.indexOf(node.name);
@@ -33070,6 +33835,26 @@ var Body = (function (_super) {
         context.moveTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top);
         context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
         context.stroke();
+        if (this.height < this.contentHeight) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top, config_1.config.DEFAULT_BAR_WIDTH, box.height * box.sy);
+            context.beginPath();
+            context.strokeStyle = this.barColor;
+            context.strokeRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top, config_1.config.DEFAULT_BAR_WIDTH, box.height * box.sy);
+            context.stroke();
+            context.fillStyle = this.barColor;
+            context.fillRect(box.left + box.width * box.sx - config_1.config.DEFAULT_BAR_WIDTH, box.top - this.offsetY * this.scrollSpeedY * box.sy, config_1.config.DEFAULT_BAR_WIDTH, this.scrollBarHeight * box.sy);
+        }
+        if (this.width < this.contentWidth) {
+            context.fillStyle = this.bgBarColor;
+            context.fillRect(box.left, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, box.width * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+            context.beginPath();
+            context.strokeStyle = this.barColor;
+            context.strokeRect(box.left, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, box.width * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+            context.stroke();
+            context.fillStyle = this.barColor;
+            context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+        }
     };
     Body.prototype.hit = function (x, y) {
         for (var i = 0; i < this.rects.length; i++) {
@@ -33083,6 +33868,320 @@ var Body = (function (_super) {
     return Body;
 }(base_1.base.Component));
 exports.Body = Body;
+
+
+/***/ }),
+/* 191 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var color_1 = __webpack_require__(4);
+var defaultTheme = {
+    DEFAULT_BG_COLOR: color_1.Color.WHITE,
+    DEFAULT_BORDER_COLOR: color_1.Color.BLACK,
+    style: {
+        borderColor: color_1.Color.BLACK,
+        bgColor: color_1.Color.WHITE,
+    },
+    name: "default",
+    ui: {
+        body: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            barColor: color_1.Color.BLACK,
+            indexColor: color_1.Color.RED,
+            bgBarColor: color_1.Color.WHITE,
+            lineColor: color_1.Color.BLACK,
+            item: {
+                borderColor: color_1.Color.BLACK,
+                bgColor: color_1.Color.WHITE,
+                textColor: color_1.Color.BLACK,
+                lineColor: color_1.Color.BLACK
+            }
+        },
+        header: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.BLACK,
+            indexColor: color_1.Color.RED,
+            lineColor: color_1.Color.BLACK,
+        },
+        left: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            item: {
+                borderColor: color_1.Color.BLACK,
+                bgColor: color_1.Color.WHITE,
+                textColor: color_1.Color.BLACK,
+            }
+        },
+    },
+    dui: {
+        body: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            barColor: color_1.Color.BLACK,
+            indexColor: color_1.Color.RED,
+            bgBarColor: color_1.Color.WHITE,
+            blockColor: color_1.Color.BLACK,
+            lineColor: color_1.Color.GREY21,
+        },
+        header: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.BLACK,
+            indexColor: color_1.Color.RED,
+            lineColor: color_1.Color.BLACK,
+            hitColor: color_1.Color.RED,
+        },
+        left: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.BLACK,
+            blackColor: color_1.Color.BLACK,
+            whiteColor: color_1.Color.WHITE,
+            hitColor: color_1.Color.RED,
+        },
+        closeBtn: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.BLACK,
+        }
+    }
+};
+var blueTheme = {
+    DEFAULT_BG_COLOR: color_1.Color.WHITE,
+    DEFAULT_BORDER_COLOR: color_1.Color.BLACK,
+    style: {
+        borderColor: color_1.Color.WHITE,
+        bgColor: color_1.Color.LIGHTSKYBLUE4,
+    },
+    name: "blue",
+    ui: {
+        body: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.SLATEGREY,
+            barColor: color_1.Color.SLATEGRAY3,
+            indexColor: color_1.Color.DARKORANGE1,
+            bgBarColor: color_1.Color.LIGHTSTEELBLUE1,
+            lineColor: color_1.Color.GAINSBORO,
+            item: {
+                borderColor: color_1.Color.LIGHTSTEELBLUE1,
+                bgColor: color_1.Color.SLATEGREY,
+                textColor: color_1.Color.WHITE,
+                lineColor: color_1.Color.GAINSBORO
+            }
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.LIGHTSKYBLUE4,
+            textColor: color_1.Color.WHITE,
+            indexColor: color_1.Color.DARKORANGE1,
+            lineColor: color_1.Color.WHITE,
+        },
+        left: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.LIGHTSKYBLUE4,
+            item: {
+                borderColor: color_1.Color.LIGHTSTEELBLUE1,
+                bgColor: color_1.Color.LIGHTSKYBLUE4,
+                textColor: color_1.Color.WHITE,
+            }
+        },
+    },
+    dui: {
+        body: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.SLATEGREY,
+            barColor: color_1.Color.SLATEGRAY3,
+            indexColor: color_1.Color.DARKORANGE1,
+            bgBarColor: color_1.Color.LIGHTSTEELBLUE1,
+            lineColor: color_1.Color.GAINSBORO,
+            blockColor: color_1.Color.LIGHTCYAN,
+            hitColor: color_1.Color.POWDERBLUE,
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.LIGHTSKYBLUE4,
+            textColor: color_1.Color.WHITE,
+            indexColor: color_1.Color.DARKORANGE1,
+            lineColor: color_1.Color.WHITE,
+        },
+        left: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.GAINSBORO,
+            textColor: color_1.Color.BLACK,
+            blackColor: color_1.Color.BLACK,
+            whiteColor: color_1.Color.GAINSBORO,
+            hitColor: color_1.Color.POWDERBLUE,
+            indexColor: color_1.Color.DARKSLATEGRAY,
+        },
+        closeBtn: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.LIGHTSKYBLUE4,
+            textColor: color_1.Color.GAINSBORO,
+        }
+    }
+};
+var blackTheme = {
+    DEFAULT_BG_COLOR: color_1.Color.WHITE,
+    DEFAULT_BORDER_COLOR: color_1.Color.BLACK,
+    style: {
+        borderColor: color_1.Color.WHITE,
+        bgColor: color_1.Color.GREY11,
+    },
+    name: "black",
+    ui: {
+        body: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.GREY21,
+            barColor: color_1.Color.GREY51,
+            indexColor: color_1.Color.GREEN,
+            bgBarColor: color_1.Color.GRAY81,
+            lineColor: color_1.Color.GAINSBORO,
+            item: {
+                borderColor: color_1.Color.GRAY91,
+                bgColor: color_1.Color.GREY21,
+                textColor: color_1.Color.WHITE,
+                lineColor: color_1.Color.GAINSBORO
+            }
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.GREY11,
+            textColor: color_1.Color.GRAY91,
+            indexColor: color_1.Color.GREEN,
+            lineColor: color_1.Color.WHITE,
+        },
+        left: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.GREY11,
+            item: {
+                borderColor: color_1.Color.GAINSBORO,
+                bgColor: color_1.Color.GREY11,
+                textColor: color_1.Color.GRAY91,
+            }
+        },
+    },
+    dui: {
+        body: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.GREY21,
+            barColor: color_1.Color.GREY51,
+            indexColor: color_1.Color.GREEN,
+            bgBarColor: color_1.Color.GRAY81,
+            lineColor: color_1.Color.GAINSBORO,
+            blockColor: color_1.Color.GRAY81,
+            hitColor: color_1.Color.GREEN4,
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.GREY11,
+            textColor: color_1.Color.WHITE,
+            indexColor: color_1.Color.GREEN,
+            lineColor: color_1.Color.WHITE,
+        },
+        left: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.GAINSBORO,
+            textColor: color_1.Color.BLACK,
+            blackColor: color_1.Color.BLACK,
+            whiteColor: color_1.Color.GAINSBORO,
+            hitColor: color_1.Color.GREEN4,
+            indexColor: color_1.Color.GREEN4,
+        },
+        closeBtn: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.LIGHTSKYBLUE4,
+            textColor: color_1.Color.GAINSBORO,
+        }
+    }
+};
+var lightTheme = {
+    DEFAULT_BG_COLOR: color_1.Color.WHITE,
+    DEFAULT_BORDER_COLOR: color_1.Color.BLACK,
+    style: {
+        borderColor: color_1.Color.GAINSBORO,
+        bgColor: color_1.Color.WHITE,
+    },
+    name: "light",
+    ui: {
+        body: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.WHITE,
+            barColor: color_1.Color.GRAY81,
+            indexColor: color_1.Color.BLUE1,
+            bgBarColor: color_1.Color.WHITE,
+            lineColor: color_1.Color.GAINSBORO,
+            item: {
+                borderColor: color_1.Color.GRAY91,
+                bgColor: color_1.Color.WHITE,
+                textColor: color_1.Color.ROYALBLUE1,
+                lineColor: color_1.Color.GREY61
+            }
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.GREY51,
+            indexColor: color_1.Color.BLUE1,
+            lineColor: color_1.Color.GAINSBORO,
+        },
+        left: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.WHITE,
+            item: {
+                borderColor: color_1.Color.GAINSBORO,
+                bgColor: color_1.Color.WHITE,
+                textColor: color_1.Color.GREY51,
+            }
+        },
+    },
+    dui: {
+        body: {
+            borderColor: color_1.Color.BLACK,
+            bgColor: color_1.Color.WHITE,
+            barColor: color_1.Color.GRAY81,
+            indexColor: color_1.Color.BLUE1,
+            bgBarColor: color_1.Color.WHITE,
+            lineColor: color_1.Color.GAINSBORO,
+            blockColor: color_1.Color.GREY61,
+            hitColor: color_1.Color.LIGHTSTEELBLUE,
+        },
+        header: {
+            borderColor: color_1.Color.GAINSBORO,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.GREY51,
+            indexColor: color_1.Color.BLUE1,
+            lineColor: color_1.Color.GAINSBORO,
+        },
+        left: {
+            borderColor: color_1.Color.GREY61,
+            bgColor: color_1.Color.WHITE,
+            textColor: color_1.Color.ROYALBLUE1,
+            blackColor: color_1.Color.GREY31,
+            whiteColor: color_1.Color.GAINSBORO,
+            hitColor: color_1.Color.LIGHTSTEELBLUE,
+            indexColor: color_1.Color.STEELBLUE,
+        },
+        closeBtn: {
+            borderColor: color_1.Color.GREY51,
+            bgColor: color_1.Color.ALICEBLUE,
+            textColor: color_1.Color.GREY51,
+        }
+    }
+};
+exports.theme = {
+    cur: defaultTheme,
+};
+exports.ThemeConfig = {
+    default: defaultTheme,
+    blue: blueTheme,
+    black: blackTheme,
+    light: lightTheme
+};
 
 
 /***/ })
