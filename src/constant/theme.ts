@@ -1,5 +1,7 @@
 import { Color } from "./color";
 
+// doc: http://tool.oschina.net/commons?type=3
+
 export interface Style {
     borderColor: string,
     lineColor?: string,
