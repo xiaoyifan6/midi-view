@@ -111,8 +111,8 @@ MidiView
 
 wheel:
 
-wheel : y scroll
-ALT + wheel : x scroll
-CTRL + wheel : x scale
-SHIFT + wheel : y scale
-CTRL + SHIFT + wheel : x、y scale
+- wheel : y scroll
+- ALT + wheel : x scroll
+-  + wheel : x scale
+- SHIFT + wheel : y scale
+- CTRL + SHIFT + wheel : x、y scale
