@@ -113,6 +113,6 @@ wheel:
 
 - wheel : y scroll
 - ALT + wheel : x scroll
--  + wheel : x scale
+- CTRL + wheel : x scale
 - SHIFT + wheel : y scale
 - CTRL + SHIFT + wheel : x、y scale
