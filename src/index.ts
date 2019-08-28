@@ -5,11 +5,11 @@ import { base } from "./base/base"
 import { config } from "./constant/config"
 
 test()
-console.log("aaa");
+// console.log("aaa");
 
 var p = new base.Point()
 p.x = 10
-console.log(p)
+// console.log(p)
 
 function initView(tag) {
     var view = <HTMLElement>document.querySelector(tag);

@@ -188,7 +188,7 @@ export class DUI extends base.BaseUI {
 
         this.body.duration = this.data["duration"] || 0
         this.body.setData(this.data.tracks[0].notes)
-        console.log(this.data.tracks[0].notes)
+        // console.log(this.data.tracks[0].notes)
         // this.left.setData(this.data.tracks)
         this.hearder.dw = this.body.dw = config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;

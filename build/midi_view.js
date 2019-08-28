@@ -1859,6 +1859,9 @@ var MidiView = (function () {
         this.addEventListener("mousemove", this.onMove.bind(this), this.canvas);
         this.addEventListener("mouseup", this.onUp.bind(this), this.canvas);
         this.addEventListener("mouseout", this.onUp.bind(this), this.canvas);
+        this.addEventListener("touchstart", this.onDown.bind(this), this.canvas);
+        this.addEventListener("touchmove", this.onMove.bind(this), this.canvas);
+        this.addEventListener("touchend", this.onUp.bind(this), this.canvas);
         this.addEventListener("wheel", this.onScroll.bind(this), this.canvas);
         this.addEventListener("keydown", this.onKeyDown.bind(this), document);
         this.addEventListener("keyup", this.onKeyUp.bind(this), document);
@@ -1878,7 +1881,19 @@ var MidiView = (function () {
             _this.refresh();
         }, this);
     };
-    MidiView.prototype.onDown = function (e) {
+    MidiView.prototype.adapteEvent = function (e) {
+        if (e.offsetX !== undefined)
+            return e;
+        if (e["targetTouches"] && e["targetTouches"].length) {
+            return {
+                offsetX: e["targetTouches"][0].clientX,
+                offsetY: e["targetTouches"][0].clientY
+            };
+        }
+        return e;
+    };
+    MidiView.prototype.onDown = function (eee) {
+        var e = this.adapteEvent(eee);
         this.eobj.x = e.offsetX;
         this.eobj.y = e.offsetY;
         this.eobj.x0 = e.offsetX;
@@ -1889,7 +1904,8 @@ var MidiView = (function () {
         event_1.event.emitComponent(event_1.event.TOUCH_DOWN, util_1.clone(this.eobj));
         this.refresh();
     };
-    MidiView.prototype.onMove = function (e) {
+    MidiView.prototype.onMove = function (eee) {
+        var e = this.adapteEvent(eee);
         this.eobj.oldX = this.eobj.x;
         this.eobj.oldY = this.eobj.y;
         this.eobj.x = e.offsetX;
@@ -1903,7 +1919,8 @@ var MidiView = (function () {
             this.refresh();
         }
     };
-    MidiView.prototype.onUp = function (e) {
+    MidiView.prototype.onUp = function (eee) {
+        var e = this.adapteEvent(eee);
         this.eobj.oldX = this.eobj.x;
         this.eobj.oldY = this.eobj.y;
         this.eobj.x = e.offsetX;
@@ -1920,17 +1937,17 @@ var MidiView = (function () {
     MidiView.prototype.onScroll = function (e) {
         e = e || window.event;
         var detail = (e["wheelDelta"] || e["detail"] || 0) * config_1.config.WHELL_RATE;
-        if (this.keysMap["ALT"]) {
+        if (this.keysMap["SHIFT"]) {
             this.eobj.detailX = detail;
             this.eobj.detailY = 0;
             event_1.event.emitComponent(event_1.event.TOUCH_MOVE, util_1.clone(this.eobj));
         }
-        else if (this.keysMap["SHIFT"] && this.keysMap["CONTROL"]) {
+        else if (this.keysMap["ALT"] && this.keysMap["CONTROL"]) {
             this.eobj.detailX = detail;
             this.eobj.detailY = detail;
             event_1.event.emitComponent("scale", util_1.clone(this.eobj));
         }
-        else if (this.keysMap["SHIFT"]) {
+        else if (this.keysMap["ALT"]) {
             this.eobj.detailX = 0;
             this.eobj.detailY = detail;
             event_1.event.emitComponent("scale", util_1.clone(this.eobj));
@@ -33467,7 +33484,6 @@ var DUI = (function (_super) {
         this.hearder.bpm = bpm;
         this.body.duration = this.data["duration"] || 0;
         this.body.setData(this.data.tracks[0].notes);
-        console.log(this.data.tracks[0].notes);
         this.hearder.dw = this.body.dw = config_1.config.dui.body.dw;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
