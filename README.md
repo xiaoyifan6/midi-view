@@ -112,7 +112,11 @@ MidiView
 wheel:
 
 - wheel : y scroll
-- ALT + wheel : x scroll
+- SHIFT + wheel : x scroll
 - CTRL + wheel : x scale
-- SHIFT + wheel : y scale
-- CTRL + SHIFT + wheel : x、y scale
+- ALT + wheel : y scale
+- CTRL + ALT + wheel : x、y scale
+
+ref blog:
+
+http://underwaysoft.com/writing/books/dsp-develop.html

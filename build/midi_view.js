@@ -774,7 +774,7 @@ exports.config = {
         headHeight: 40,
         leftWidth: 80,
         hearder: {
-            dw: 8,
+            dw: 0.01,
             bate: 4,
             borderWith: 1,
             lineWidth: 0.4,
@@ -792,7 +792,7 @@ exports.config = {
             }
         },
         body: {
-            dw: 8,
+            dw: 0.1,
             paddingRight: 40,
             bate: 4,
             lineWidth: 0.4,
@@ -825,7 +825,7 @@ exports.config = {
         },
         body: {
             dh: 8,
-            dw: 40,
+            dw: 0.2,
             indexWidth: 0.5,
             lineWidth: 0.5,
             paddingRight: 10,
@@ -1801,7 +1801,8 @@ var MidiView = (function () {
         this.keysMap = {};
         this.synths = [];
         this.startTime = 0;
-        this.bpm = 2;
+        this.bpm = 120;
+        this.ppq = 192;
         this.bindListner = [];
         this.view = view;
         this.canvas = this.view.querySelector("canvas");
@@ -1998,7 +1999,6 @@ var MidiView = (function () {
         configurable: true
     });
     MidiView.prototype.play = function () {
-        var _this = this;
         this.stop();
         var self = this;
         var now = Tone.now() + config_1.config.TONE_DELAY;
@@ -2026,8 +2026,8 @@ var MidiView = (function () {
             _loop_1();
         }
         this.intervalIndex = setInterval(function () {
-            self.ui.position = (Tone.now() - self.startTime) * _this.bpm;
-            self.dui.position = (Tone.now() - self.startTime) * _this.bpm;
+            var position = self.bpm * (Tone.now() - self.startTime) / 60;
+            self.ui.position = self.dui.position = position;
             self.refresh();
         }, config_1.config.REFRESH_INTERVAL);
     };
@@ -2046,16 +2046,20 @@ var MidiView = (function () {
     };
     MidiView.prototype.loadData = function () {
         if (this.data) {
-            if (this.data["header"]) {
-                if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-                    Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
-                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
+            var data = this.data;
+            if (data.header) {
+                var ppq = 192;
+                if (data.header.ppq) {
+                    ppq = data.header.ppq;
+                    Tone.Transport.PPQ = data.header.ppq;
+                }
+                this.ppq = ppq;
+                if (data.header.tempos && data.header.tempos.length) {
+                    Tone.Transport.bpm.value = data.header.tempos[0].bpm;
+                    this.bpm = data.header.tempos[0].bpm;
                 }
                 else {
                     Tone.Transport.bpm.value = config_1.config.DEFAULT_TEMPOS;
-                }
-                if (this.data["header"]["ppq"]) {
-                    Tone.Transport.PPQ = this.data["header"]["ppq"];
                 }
             }
             this.ui.setData(this.data);
@@ -32599,6 +32603,8 @@ var UI = (function (_super) {
         if (headHeight === void 0) { headHeight = config_1.config.ui.headHeight; }
         if (leftWidth === void 0) { leftWidth = config_1.config.ui.leftWidth; }
         var _this = _super.call(this, container, theme) || this;
+        _this.dw = config_1.config.ui.body.dw;
+        _this.ppq = 192;
         _this.headHeight = headHeight;
         _this.leftWidth = leftWidth;
         _this.hearder = new header_1.Header(leftWidth, 0, container.width - leftWidth, headHeight);
@@ -32637,7 +32643,7 @@ var UI = (function (_super) {
         event_1.event.bind(event_1.event.TOUCH_MOVE, cbk, this.left);
         var cbk = function (eobj) {
             var dy = eobj.data.detailY;
-            var dx = eobj.data.detailX;
+            var dx = eobj.data.detailX * 0.002;
             if (self.body.listView.itemHeight + dy >= 40 && self.body.listView.itemHeight + dy <= self.body.height / 2) {
                 self.body.listView.itemHeight += dy;
                 self.left.listView.itemHeight += dy;
@@ -32646,11 +32652,12 @@ var UI = (function (_super) {
                 self.body.listView.refresh();
                 self.left.listView.refresh();
             }
-            if (self.body.dw + dx >= 8 && (self.body.dw + dx) * self.body.bpm <= 240) {
-                self.body.dw += dx;
-                self.hearder.dw += dx;
+            if ((self.dw + dx) * self.ppq >= 10 && (self.dw + dx) * self.ppq <= 100) {
+                self.dw += dx;
+                self.hearder.dw = self.body.dw = self.dw * self.ppq;
+                self.body.dw2 = self.dw;
                 for (var i in self.body.listView.views) {
-                    self.body.listView.views[i]["dw"] = self.body.dw * self.body.bpm;
+                    self.body.listView.views[i]["dw"] = self.dw;
                 }
                 self.body.offsetX = 0;
                 self.hearder.offsetX = 0;
@@ -32672,19 +32679,22 @@ var UI = (function (_super) {
     };
     UI.prototype.setData = function (data) {
         _super.prototype.setData.call(this, data);
-        var bpm = config_1.config.DEFAULT_BMP;
-        if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
+        var ppq = 192;
+        if (this.data["header"]) {
+            if (this.data["header"]["ppq"]) {
+                ppq = this.data["header"]["ppq"];
+            }
         }
-        this.body.bpm = bpm;
-        this.hearder.bpm = bpm;
-        this.body.duration = this.data["duration"] || 0;
+        this.ppq = ppq;
+        this.dw = config_1.config.ui.body.dw;
+        this.body.dw2 = this.dw;
+        this.body.duration = this.data["durationTicks"] || 0;
         this.body.setData(this.data.tracks);
         this.left.setData(this.data.tracks);
         this.hearder.offsetX = 0;
-        this.hearder.dw = this.body.dw = 8;
+        this.body.dw = this.hearder.dw = config_1.config.ui.body.dw * ppq;
         for (var i in this.body.listView.views) {
-            this.body.listView.views[i]["dw"] = this.body.dw * this.body.bpm;
+            this.body.listView.views[i]["dw"] = config_1.config.ui.body.dw;
         }
         this.hearder.position = this.body.position;
     };
@@ -32760,7 +32770,6 @@ var Header = (function (_super) {
         _this.position = 0;
         _this.offsetX = 0;
         _this.bate = config_1.config.ui.hearder.bate;
-        _this.bpm = 0;
         _this.lineWidth = config_1.config.ui.hearder.lineWidth;
         _this.lineColor = "#000000";
         _this.textWidth = config_1.config.ui.hearder.textWidth;
@@ -32857,10 +32866,10 @@ var Body = (function (_super) {
         if (height === void 0) { height = 0; }
         var _this = _super.call(this, x, y, width, height) || this;
         _this.dw = config_1.config.ui.body.dw;
+        _this.dw2 = config_1.config.ui.body.dw;
         _this.paddingRight = config_1.config.ui.body.paddingRight;
         _this.offsetX = 0;
         _this.bate = config_1.config.ui.body.bate;
-        _this.bpm = 0;
         _this.position = 0;
         _this.lineWidth = config_1.config.ui.body.lineWidth;
         _this.lineColor = "#000000";
@@ -32873,7 +32882,7 @@ var Body = (function (_super) {
         _this.listView = new item_1.ListView(_this, [], config_1.config.ui.body.listView.itemHeight)
             .cbk(function () {
             var item = new item_1.MidiItem();
-            item.dw = _this.dw * _this.bpm;
+            item.dw = _this.dw;
             return item;
         });
         _this.listView.scrollBarWidth = config_1.config.ui.body.listView.scrollBarWidth;
@@ -32888,7 +32897,7 @@ var Body = (function (_super) {
     });
     Object.defineProperty(Body.prototype, "contentWidth", {
         get: function () {
-            return this.duration * this.bpm * this.dw + this.paddingRight;
+            return this.duration * this.dw2 + this.paddingRight;
         },
         enumerable: true,
         configurable: true
@@ -33191,8 +33200,8 @@ var MidiItem = (function (_super) {
             var node = nodes[j];
             context.beginPath();
             var yy = data_1.Tone.indexOf(node.name);
-            context.moveTo(box.left + (node.time * this.dw + this.offsetX) * box.sx, box.top + eh * yy * box.sy);
-            context.lineTo(box.left + ((node.time + node.duration) * this.dw + this.offsetX) * box.sx, box.top + eh * yy * box.sy);
+            context.moveTo(box.left + (node.ticks * this.dw + this.offsetX) * box.sx, box.top + eh * yy * box.sy);
+            context.lineTo(box.left + ((node.ticks + node.durationTicks) * this.dw + this.offsetX) * box.sx, box.top + eh * yy * box.sy);
             context.closePath();
             context.stroke();
         }
@@ -33344,6 +33353,8 @@ var DUI = (function (_super) {
         if (headHeight === void 0) { headHeight = config_1.config.dui.headHeight; }
         if (leftWidth === void 0) { leftWidth = config_1.config.dui.leftWidth; }
         var _this = _super.call(this, container, theme) || this;
+        _this.dw = config_1.config.dui.body.dw;
+        _this.ppq = 192;
         _this.headHeight = headHeight;
         _this.leftWidth = leftWidth;
         _this.body = new body_1.Body(leftWidth, headHeight, container.width - leftWidth, container.height - headHeight);
@@ -33387,16 +33398,17 @@ var DUI = (function (_super) {
         event_1.event.bind(event_1.event.TOUCH_MOVE, cbk, this.left);
         var cbk = function (eobj) {
             var dy = eobj.data.detailY * 0.2;
-            var dx = eobj.data.detailX;
+            var dx = eobj.data.detailX * 0.002;
             if (dy != 0 && self.body.dh + dy >= 8 && self.body.dh + dy <= self.body.height / 4) {
                 self.body.dh += dy;
                 self.left.dh = self.body.dh * 82 / 48;
                 self.body.offsetY = 0;
                 self.left.offsetY = 0;
             }
-            if (dx != 0 && self.body.dw + dx >= 30 && (self.body.dw + dx) * self.body.bpm <= 240) {
-                self.body.dw += dx;
-                self.hearder.dw = self.body.dw;
+            if (dx != 0 && (self.dw + dx) * self.ppq >= 50 && (self.dw + dx) * self.ppq <= 200) {
+                self.dw += dx;
+                self.body.dw = self.dw;
+                self.hearder.dw = self.dw * self.ppq;
                 self.body.offsetX = 0;
                 self.hearder.offsetX = 0;
                 self.body.offsetX = 0;
@@ -33407,7 +33419,7 @@ var DUI = (function (_super) {
             if (eobj.target !== self.hearder)
                 return;
             var x = Math.floor((eobj.data.x - self.body.offsetX - self.body.left) / self.hearder.dw);
-            if (self.body.left + self.body.offsetX + x * self.body.dw < self.body.left) {
+            if (self.body.left + self.body.offsetX + x * self.hearder.dw < self.body.left) {
                 x = 0;
             }
             self.body.position = x;
@@ -33476,15 +33488,19 @@ var DUI = (function (_super) {
     };
     DUI.prototype.setData = function (data) {
         _super.prototype.setData.call(this, data);
-        var bpm = config_1.config.DEFAULT_BMP;
-        if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config_1.config.DEFAULT_TEMPOS) * 4;
+        var ppq = 192;
+        if (this.data["header"]) {
+            if (this.data["header"]["ppq"]) {
+                ppq = this.data["header"]["ppq"];
+            }
         }
-        this.body.bpm = bpm;
-        this.hearder.bpm = bpm;
-        this.body.duration = this.data["duration"] || 0;
+        this.ppq = ppq;
+        this.dw = config_1.config.dui.body.dw;
+        this.body.duration = this.data["durationTicks"] || 0;
         this.body.setData(this.data.tracks[0].notes);
-        this.hearder.dw = this.body.dw = config_1.config.dui.body.dw;
+        this.body.ppq = ppq;
+        this.body.dw = this.dw;
+        this.hearder.dw = this.dw * ppq;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -33492,7 +33508,9 @@ var DUI = (function (_super) {
     };
     DUI.prototype.setNodesData = function (data) {
         this.body.setData(data);
-        this.hearder.dw = this.body.dw = config_1.config.dui.body.dw;
+        this.dw = config_1.config.dui.body.dw;
+        this.body.dw = config_1.config.dui.body.dw;
+        this.hearder.dw = config_1.config.dui.body.dw * this.ppq;
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -33702,6 +33720,7 @@ var Body = (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.dh = config_1.config.dui.body.dh;
         _this.dw = config_1.config.dui.body.dw;
+        _this.ppq = 192;
         _this.lineColor = "#cccccc";
         _this.lineWidth = config_1.config.dui.body.lineWidth;
         _this.barColor = "#000000";
@@ -33715,7 +33734,6 @@ var Body = (function (_super) {
         _this.offsetY = 0;
         _this.nodes = [];
         _this.duration = 0;
-        _this.bpm = 0;
         _this.position = 0;
         _this.paddingRight = config_1.config.dui.body.paddingRight;
         _this.hitIndex = -1;
@@ -33751,6 +33769,7 @@ var Body = (function (_super) {
         this.position = 0;
         this.dw = config_1.config.dui.body.dw;
         this.hitIndex = -1;
+        this.refreshRects();
     };
     Body.prototype.init = function () {
         _super.prototype.init.call(this);
@@ -33765,7 +33784,7 @@ var Body = (function (_super) {
     });
     Object.defineProperty(Body.prototype, "contentWidth", {
         get: function () {
-            return this.duration * this.bpm * this.dw + this.paddingRight;
+            return this.duration * this.dw + this.paddingRight;
         },
         enumerable: true,
         configurable: true
@@ -33813,16 +33832,18 @@ var Body = (function (_super) {
         configurable: true
     });
     Body.prototype.onDraw = function (context) {
-        if (!this.parent || this.bpm <= 0)
+        if (!this.parent || this.ppq <= 0)
             return;
         _super.prototype.onDraw.call(this, context);
         var box = this.box;
         context.lineWidth = this.lineWidth;
         context.strokeStyle = this.lineColor;
-        for (var i = 0; i * this.dw + this.offsetX < this.width; i++) {
+        var dw = this.dw * this.ppq;
+        for (var j = Math.floor(-this.offsetX / dw); j * dw + this.offsetX < this.width; j++) {
+            var lx = box.left + (this.offsetX + j * dw) * box.sx;
             context.beginPath();
-            context.moveTo(box.left + (this.offsetX + i * this.dw) * box.sx, box.top);
-            context.lineTo(box.left + (this.offsetX + i * this.dw) * box.sx, box.top + box.height);
+            context.moveTo(lx, box.top);
+            context.lineTo(lx, box.top + box.height);
             context.stroke();
         }
         for (var i = 0; i * this.dh + this.offsetY < this.height; i++) {
@@ -33831,25 +33852,24 @@ var Body = (function (_super) {
             context.lineTo(box.left + box.width, box.top + +(this.offsetY + i * this.dh) * box.sy);
             context.stroke();
         }
-        this.rects = [];
-        for (var i = 0; i < this.nodes.length; i++) {
+        this.refreshRects();
+        for (var i = 0; i < this.rects.length; i++) {
             if (this.hitIndex === i) {
                 context.fillStyle = this.hitColor;
             }
             else {
                 context.fillStyle = this.blockColor;
             }
-            var node = this.nodes[i];
-            var yy = data_1.Tone.indexOf(node.name);
-            var rect = new base_1.base.Rect(this.offsetX + box.left + node.time * this.bpm * this.dw * box.sx, this.offsetY + box.top + yy * this.dh * box.sy, node.duration * this.bpm * this.dw * box.sx, this.dh * box.sy);
-            context.fillRect(rect.x, rect.y, rect.width, rect.height);
-            this.rects.push(rect);
+            var rect = this.rects[i];
+            if (rect.right > box.left && rect.left < box.right && rect.top < box.bottom && rect.bottom > box.top) {
+                context.fillRect(rect.x, rect.y, rect.width, rect.height);
+            }
         }
         context.beginPath();
         context.strokeStyle = this.indexColor;
         context.lineWidth = this.indexWidth;
-        context.moveTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top);
-        context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
+        context.moveTo(box.left + (this.offsetX + this.position * dw) * box.sx, box.top);
+        context.lineTo(box.left + (this.offsetX + this.position * dw) * box.sx, box.top + box.height);
         context.stroke();
         if (this.height < this.contentHeight) {
             context.fillStyle = this.bgBarColor;
@@ -33870,6 +33890,20 @@ var Body = (function (_super) {
             context.stroke();
             context.fillStyle = this.barColor;
             context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config_1.config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config_1.config.DEFAULT_BAR_WIDTH);
+        }
+    };
+    Body.prototype.refreshRects = function () {
+        if (this.rects.length != this.nodes.length) {
+            this.rects = new Array(this.nodes.length);
+            for (var i = 0; i < this.rects.length; i++) {
+                this.rects[i] = new base_1.base.Rect();
+            }
+        }
+        var box = this.box;
+        for (var i = 0; i < this.nodes.length; i++) {
+            var node = this.nodes[i];
+            var yy = data_1.Tone.indexOf(node.name);
+            this.rects[i].set(this.offsetX + box.left + node.ticks * this.dw * box.sx, this.offsetY + box.top + yy * this.dh * box.sy, node.durationTicks * this.dw * box.sx, this.dh * box.sy);
         }
     };
     Body.prototype.hit = function (x, y) {
