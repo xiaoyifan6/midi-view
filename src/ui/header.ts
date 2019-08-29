@@ -3,7 +3,7 @@ import { config } from "../constant/config";
 import { Style } from "../constant/theme";
 
 export class Header extends base.Component {
-    public dw: number = config.ui.hearder.dw;
+    public dw: number = config.ui.hearder.dw * 129;
     public position: number = 0;
     public offsetX: number = 0;
     public bate: number = config.ui.hearder.bate;

@@ -4,7 +4,7 @@ import { config } from "../constant/config";
 import { Style } from "../constant/theme";
 
 export class Body extends base.Component {
-    public dw: number = config.ui.body.dw;
+    public dw: number = config.ui.body.dw * 192;
     public dw2: number = config.ui.body.dw;
     private paddingRight = config.ui.body.paddingRight;
     // public dw2: number = 60;
