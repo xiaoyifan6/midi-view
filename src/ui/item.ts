@@ -170,12 +170,12 @@ export class MidiItem extends Item {
             context.beginPath();
             var yy = Tone.indexOf(node.name);
             context.moveTo(
-                box.left + (node.time * this.dw + this.offsetX) * box.sx,
+                box.left + (node.ticks * this.dw + this.offsetX) * box.sx,
                 box.top + eh * yy * box.sy
             );
 
             context.lineTo(
-                box.left + ((node.time + node.duration) * this.dw + this.offsetX) * box.sx,
+                box.left + ((node.ticks + node.durationTicks) * this.dw + this.offsetX) * box.sx,
                 box.top + eh * yy * box.sy
             );
             context.closePath();

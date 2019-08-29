@@ -13,6 +13,8 @@ export class UI extends base.BaseUI {
 
     private headHeight: number;
     private leftWidth: number;
+    private dw: number = config.ui.body.dw;
+    private ppq: number = 192;
 
     public constructor(container: base.Component, theme: Theme, headHeight: number = config.ui.headHeight, leftWidth: number = config.ui.leftWidth) {
         super(container, theme);
@@ -62,7 +64,7 @@ export class UI extends base.BaseUI {
 
         var cbk = (eobj: event.EventObject) => {
             let dy = eobj.data.detailY;// eobj.p.y - eobj.op.y;
-            let dx = eobj.data.detailX;//eobj.p.x - eobj.op.x;
+            let dx = eobj.data.detailX * 0.002;//eobj.p.x - eobj.op.x;
 
             if (self.body.listView.itemHeight + dy >= 40 && self.body.listView.itemHeight + dy <= self.body.height / 2) {
                 self.body.listView.itemHeight += dy;
@@ -73,14 +75,13 @@ export class UI extends base.BaseUI {
                 self.left.listView.refresh();
             }
 
-            if (self.body.dw + dx >= 8 && (self.body.dw + dx) * self.body.bpm <= 240) {
-                // self.body.dw2 += dx;
-
-                self.body.dw += dx;
-                self.hearder.dw += dx;
+            if ((self.dw + dx) * self.ppq >= 10 && (self.dw + dx) * self.ppq <= 100) {
+                self.dw += dx;
+                self.hearder.dw = self.body.dw = self.dw * self.ppq;
+                self.body.dw2 = self.dw;
 
                 for (var i in self.body.listView.views) {
-                    self.body.listView.views[i]["dw"] = self.body.dw * self.body.bpm;
+                    self.body.listView.views[i]["dw"] = self.dw;
                 }
                 self.body.offsetX = 0;
                 self.hearder.offsetX = 0;
@@ -107,28 +108,30 @@ export class UI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = config.DEFAULT_BMP;
-        var ppq = 4;
+        var ppq = 192;
         if (this.data["header"]) {
-            // if (this.data["header"]["ppq"]) {
-            //     ppq = this.data["header"]["ppq"] / 24;
-            // }
-            if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * ppq;
+            if (this.data["header"]["ppq"]) {
+                ppq = this.data["header"]["ppq"];
             }
+            // if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+            //     bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
+            // }
         }
 
-        this.body.bpm = bpm;
-        this.hearder.bpm = bpm;
+        this.ppq = ppq;
+        this.dw = config.ui.body.dw;
+        this.body.dw2 = this.dw;
 
-        this.body.duration = this.data["duration"] || 0
+        this.body.duration = this.data["durationTicks"] || 0
         this.body.setData(this.data.tracks)
         this.left.setData(this.data.tracks)
 
         this.hearder.offsetX = 0;
-        this.hearder.dw = this.body.dw = 8;
+        // this.hearder.dw = this.body.dw = config.ui.body.dw;
+
+        this.body.dw = this.hearder.dw = config.ui.body.dw * ppq;
         for (var i in this.body.listView.views) {
-            this.body.listView.views[i]["dw"] = this.body.dw * this.body.bpm;
+            this.body.listView.views[i]["dw"] = config.ui.body.dw;
         }
         this.hearder.position = this.body.position;
     }

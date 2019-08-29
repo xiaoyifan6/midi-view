@@ -5,12 +5,12 @@ import { Style } from "../constant/theme";
 
 export class Body extends base.Component {
     public dw: number = config.ui.body.dw;
+    public dw2: number = config.ui.body.dw;
     private paddingRight = config.ui.body.paddingRight;
     // public dw2: number = 60;
 
     public offsetX: number = 0;
     public bate: number = config.ui.body.bate;
-    public bpm: number = 0;
     public position: number = 0;
     public lineWidth: number = config.ui.body.lineWidth;
     public lineColor: string = "#000000";
@@ -31,7 +31,7 @@ export class Body extends base.Component {
             .cbk(() => {
                 var item = new MidiItem();
                 // item.dw = this.dw2;
-                item.dw = this.dw * this.bpm;
+                item.dw = this.dw;
                 return item;
             });
         this.listView.scrollBarWidth = config.ui.body.listView.scrollBarWidth;
@@ -43,7 +43,7 @@ export class Body extends base.Component {
 
     public get contentWidth(): number {
         // return this.duration * this.dw2;
-        return this.duration * this.bpm * this.dw + this.paddingRight;
+        return this.duration * this.dw2 + this.paddingRight;
     }
 
     public get scrollHeight(): number {

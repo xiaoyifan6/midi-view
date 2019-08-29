@@ -17,6 +17,8 @@ export class DUI extends base.BaseUI {
     public body: Body;
     private synth: any;
     private closeBtn: base.Component;
+    private dw: number = config.dui.body.dw;
+    private ppq: number = 192;
 
 
     public constructor(container: base.Component, theme: Theme, headHeight: number = config.dui.headHeight, leftWidth: number = config.dui.leftWidth) {
@@ -79,7 +81,7 @@ export class DUI extends base.BaseUI {
 
         var cbk = (eobj: event.EventObject) => {
             let dy = eobj.data.detailY * 0.2;// eobj.p.y - eobj.op.y;
-            let dx = eobj.data.detailX;//eobj.p.x - eobj.op.x;
+            let dx = eobj.data.detailX * 0.002;//eobj.p.x - eobj.op.x;
 
             if (dy != 0 && self.body.dh + dy >= 8 && self.body.dh + dy <= self.body.height / 4) {
                 self.body.dh += dy;
@@ -89,9 +91,11 @@ export class DUI extends base.BaseUI {
                 self.left.offsetY = 0;
             }
 
-            if (dx != 0 && self.body.dw + dx >= 30 && (self.body.dw + dx) * self.body.bpm <= 240) {
-                self.body.dw += dx;
-                self.hearder.dw = self.body.dw;
+            if (dx != 0 && (self.dw + dx) * self.ppq >= 50 && (self.dw + dx) * self.ppq <= 200) {
+                self.dw += dx;
+
+                self.body.dw = self.dw;
+                self.hearder.dw = self.dw * self.ppq;
                 self.body.offsetX = 0;
                 self.hearder.offsetX = 0;
                 self.body.offsetX = 0;
@@ -103,7 +107,7 @@ export class DUI extends base.BaseUI {
         var cbk2 = (eobj: event.EventObject) => {
             if (eobj.target !== self.hearder) return;
             var x = Math.floor((eobj.data.x - self.body.offsetX - self.body.left) / self.hearder.dw);
-            if (self.body.left + self.body.offsetX + x * self.body.dw < self.body.left) {
+            if (self.body.left + self.body.offsetX + x * self.hearder.dw < self.body.left) {
                 x = 0;
             }
             self.body.position = x;
@@ -178,25 +182,32 @@ export class DUI extends base.BaseUI {
 
     public setData(data: any) {
         super.setData(data);
-        var bpm = config.DEFAULT_BMP;
-        var ppq = 4;
+        // var bpm = config.DEFAULT_BMP;
+        var ppq = 192;
         if (this.data["header"]) {
-            // if (this.data["header"]["ppq"]) {
-            //     ppq = this.data["header"]["ppq"] / 24;
-            // }
-            if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * ppq;
+            if (this.data["header"]["ppq"]) {
+                ppq = this.data["header"]["ppq"];
             }
+            // if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+            //     bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * ppq;
+            // }
         }
 
-        this.body.bpm = bpm;
-        this.hearder.bpm = bpm;
+        // this.body.bpm = bpm;
+        // this.hearder.bpm = bpm;
+        this.ppq = ppq;
+        this.dw = config.dui.body.dw;
 
-        this.body.duration = this.data["duration"] || 0
+        this.body.duration = this.data["durationTicks"] || 0
         this.body.setData(this.data.tracks[0].notes)
         // console.log(this.data.tracks[0].notes)
         // this.left.setData(this.data.tracks)
-        this.hearder.dw = this.body.dw = config.dui.body.dw;
+
+        this.body.ppq = ppq;
+        this.body.dw = this.dw;
+        this.hearder.dw = this.dw * ppq;
+
+
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;
@@ -205,7 +216,11 @@ export class DUI extends base.BaseUI {
 
     public setNodesData(data: any) {
         this.body.setData(data);
-        this.hearder.dw = this.body.dw = config.dui.body.dw;
+
+        this.dw = config.dui.body.dw;
+        this.body.dw = config.dui.body.dw;
+        this.hearder.dw = config.dui.body.dw * this.ppq;
+
         this.left.dh = this.body.dh * 82 / 48;
         this.hearder.offsetX = 0;
         this.left.offsetY = 0;

@@ -4,8 +4,11 @@ import { config } from "../constant/config";
 import { Style } from "../constant/theme";
 
 export class Body extends base.Component {
+
     public dh: number = config.dui.body.dh;
     public dw: number = config.dui.body.dw;
+    public ppq: number = 192;
+
     public lineColor: string = "#cccccc";
     public lineWidth: number = config.dui.body.lineWidth;
     public barColor: string = "#000000";
@@ -21,7 +24,7 @@ export class Body extends base.Component {
     public offsetY: number = 0;
     public nodes: any[] = [];
     public duration: number = 0;
-    public bpm: number = 0;
+    // public bpm: number = 0;
     public position: number = 0;
     private paddingRight = config.dui.body.paddingRight;
     private hitIndex: number = -1;
@@ -58,6 +61,8 @@ export class Body extends base.Component {
         this.position = 0;
         this.dw = config.dui.body.dw;
         this.hitIndex = -1;
+
+        this.refreshRects();
     }
 
     protected init() {
@@ -71,7 +76,7 @@ export class Body extends base.Component {
 
     public get contentWidth(): number {
         // return this.duration * this.dw2;
-        return this.duration * this.bpm * this.dw + this.paddingRight;
+        return this.duration * this.dw + this.paddingRight;
     }
 
     public get scrollHeight(): number {
@@ -100,7 +105,7 @@ export class Body extends base.Component {
 
     public onDraw(context: CanvasRenderingContext2D) {
 
-        if (!this.parent || this.bpm <= 0) return
+        if (!this.parent || this.ppq <= 0) return
 
         super.onDraw(context);
 
@@ -109,10 +114,12 @@ export class Body extends base.Component {
         context.lineWidth = this.lineWidth;
         context.strokeStyle = this.lineColor;
 
-        for (var i = 0; i * this.dw + this.offsetX < this.width; i++) {
+        var dw = this.dw * this.ppq;
+        for (var j = Math.floor(-this.offsetX / dw); j * dw + this.offsetX < this.width; j++) {
+            var lx = box.left + (this.offsetX + j * dw) * box.sx;
             context.beginPath();
-            context.moveTo(box.left + (this.offsetX + i * this.dw) * box.sx, box.top)
-            context.lineTo(box.left + (this.offsetX + i * this.dw) * box.sx, box.top + box.height)
+            context.moveTo(lx, box.top)
+            context.lineTo(lx, box.top + box.height)
             context.stroke();
         }
 
@@ -123,28 +130,45 @@ export class Body extends base.Component {
             context.stroke();
         }
 
-        this.rects = [];
-        for (var i = 0; i < this.nodes.length; i++) {
+        // this.rects = [];
+        // for (var i = 0; i < this.nodes.length; i++) {
+        //     if (this.hitIndex === i) {
+        //         context.fillStyle = this.hitColor;
+        //     } else {
+        //         context.fillStyle = this.blockColor;
+        //     }
+        //     let node = this.nodes[i];
+        //     var yy = Tone.indexOf(node.name);
+        //     let rect = new base.Rect(this.offsetX + box.left + node.ticks * this.dw * box.sx,
+        //         this.offsetY + box.top + yy * this.dh * box.sy,
+        //         node.durationTicks * this.dw * box.sx,
+        //         this.dh * box.sy);
+        //     if (rect.right > box.left && rect.left < box.right && rect.top < box.bottom && rect.bottom > box.top) {
+        //         context.fillRect(rect.x, rect.y, rect.width, rect.height);
+        //     }
+        //     this.rects.push(rect);
+        // }
+
+        this.refreshRects();
+        for (var i = 0; i < this.rects.length; i++) {
             if (this.hitIndex === i) {
                 context.fillStyle = this.hitColor;
             } else {
                 context.fillStyle = this.blockColor;
             }
-            let node = this.nodes[i];
-            var yy = Tone.indexOf(node.name);
-            let rect = new base.Rect(this.offsetX + box.left + node.time * this.bpm * this.dw * box.sx,
-                this.offsetY + box.top + yy * this.dh * box.sy,
-                node.duration * this.bpm * this.dw * box.sx,
-                this.dh * box.sy);
-            context.fillRect(rect.x, rect.y, rect.width, rect.height);
-            this.rects.push(rect);
+
+            let rect = this.rects[i];
+            if (rect.right > box.left && rect.left < box.right && rect.top < box.bottom && rect.bottom > box.top) {
+                context.fillRect(rect.x, rect.y, rect.width, rect.height);
+            }
+
         }
 
         context.beginPath();
         context.strokeStyle = this.indexColor;
         context.lineWidth = this.indexWidth;
-        context.moveTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top);
-        context.lineTo(box.left + (this.offsetX + this.position * this.dw) * box.sx, box.top + box.height);
+        context.moveTo(box.left + (this.offsetX + this.position * dw) * box.sx, box.top);
+        context.lineTo(box.left + (this.offsetX + this.position * dw) * box.sx, box.top + box.height);
         context.stroke();
 
         if (this.height < this.contentHeight) {
@@ -167,6 +191,26 @@ export class Body extends base.Component {
             context.stroke();
             context.fillStyle = this.barColor;
             context.fillRect(box.left - this.offsetX * this.scrollSpeedX * box.sx, box.top + box.height * box.sy - config.DEFAULT_BAR_WIDTH, this.scrollBarWidth * box.sx, config.DEFAULT_BAR_WIDTH);
+        }
+    }
+
+    private refreshRects() {
+        if (this.rects.length != this.nodes.length) {
+            this.rects = new Array<base.Rect>(this.nodes.length);
+            for (var i = 0; i < this.rects.length; i++) {
+                this.rects[i] = new base.Rect();
+            }
+        }
+
+        var box = this.box;
+        for (var i = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[i];
+            var yy = Tone.indexOf(node.name);
+
+            this.rects[i].set(this.offsetX + box.left + node.ticks * this.dw * box.sx,
+                this.offsetY + box.top + yy * this.dh * box.sy,
+                node.durationTicks * this.dw * box.sx,
+                this.dh * box.sy);
         }
     }
 

@@ -7,7 +7,7 @@ export class Header extends base.Component {
     public position: number = 0;
     public offsetX: number = 0;
     public bate: number = config.ui.hearder.bate;
-    public bpm: number = 0;
+    // public bpm: number = 0;
     public lineWidth: number = config.ui.hearder.lineWidth;
     public lineColor: string = "#000000";
     public textWidth: number = config.ui.hearder.textWidth;

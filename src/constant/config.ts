@@ -24,7 +24,7 @@ export var config = {
         headHeight: 40,
         leftWidth: 80,
         hearder: {
-            dw: 8,
+            dw: 0.01,
             bate: 4,
             borderWith: 1,
             lineWidth: 0.4,
@@ -42,7 +42,7 @@ export var config = {
             }
         },
         body: {
-            dw: 8,
+            dw: 0.1,
             paddingRight: 40,
             bate: 4,
             lineWidth: 0.4,
@@ -75,7 +75,7 @@ export var config = {
         },
         body: {
             dh: 8,
-            dw: 40,
+            dw: 0.4,
             indexWidth: 0.5,
             lineWidth: 0.5,
             paddingRight: 10,
