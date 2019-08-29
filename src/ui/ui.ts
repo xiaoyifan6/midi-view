@@ -108,8 +108,14 @@ export class UI extends base.BaseUI {
     public setData(data: any) {
         super.setData(data);
         var bpm = config.DEFAULT_BMP;
-        if (this.data["header"] && this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-            bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
+        var ppq = 4;
+        if (this.data["header"]) {
+            // if (this.data["header"]["ppq"]) {
+            //     ppq = this.data["header"]["ppq"] / 24;
+            // }
+            if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
+                bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * ppq;
+            }
         }
 
         this.body.bpm = bpm;

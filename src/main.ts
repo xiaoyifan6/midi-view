@@ -8,6 +8,7 @@ import { DUI } from "./dui/dui";
 
 import { config } from "./constant/config";
 import { theme, ThemeConfig } from "./constant/theme";
+import { MidiJSON } from "./constant/midi";
 
 type CbkType = (e) => void
 type ListenerObject = {
@@ -297,15 +298,18 @@ export class MidiView {
 
     private loadData() {
         if (this.data) {
-            if (this.data["header"]) {
-                if (this.data["header"]["tempos"] && this.data["header"]["tempos"][0]) {
-                    Tone.Transport.bpm.value = this.data["header"]["tempos"][0]["bpm"];
-                    this.bpm = 60 / (this.data["header"]["tempos"][0]["bpm"] || config.DEFAULT_TEMPOS) * 4;
+            var data = <MidiJSON>this.data;
+            if (data.header) {
+                var ppq = 4;
+                // if (data.header.ppq) {
+                //     ppq = data.header.ppq / 24;
+                //     Tone.Transport.PPQ = data.header.ppq;
+                // }
+                if (data.header.tempos && data.header.tempos.length) {
+                    Tone.Transport.bpm.value = data.header.tempos[0].bpm;
+                    this.bpm = 60 / (data.header.tempos[0].bpm || config.DEFAULT_TEMPOS) * ppq;
                 } else {
                     Tone.Transport.bpm.value = config.DEFAULT_TEMPOS;
-                }
-                if (this.data["header"]["ppq"]) {
-                    Tone.Transport.PPQ = this.data["header"]["ppq"];
                 }
             }
             // bmp
