@@ -32,7 +32,9 @@ export class MidiView {
     private synths: any[] = [];
     private startTime: number = 0;
     private intervalIndex: any;
-    public bpm: number = 2;
+    public bpm: number = 120;
+    public ppq: number = 192;
+
     private bindListner: ListenerObject[] = [];
 
     public constructor(view: HTMLElement, key?: string) {
@@ -277,8 +279,12 @@ export class MidiView {
         }
 
         this.intervalIndex = setInterval(() => {
-            self.ui.position = (Tone.now() - self.startTime) * this.bpm;
-            self.dui.position = (Tone.now() - self.startTime) * this.bpm;
+
+            var position = self.bpm * (Tone.now() - self.startTime) / 60;
+            self.ui.position = self.dui.position = position;
+
+            // self.ui.position = (Tone.now() - self.startTime) * this.bpm;
+            // self.dui.position = (Tone.now() - self.startTime) * this.bpm;
             self.refresh();
         }, config.REFRESH_INTERVAL);
     }
@@ -300,14 +306,17 @@ export class MidiView {
         if (this.data) {
             var data = <MidiJSON>this.data;
             if (data.header) {
-                var ppq = 4;
-                // if (data.header.ppq) {
-                //     ppq = data.header.ppq / 24;
-                //     Tone.Transport.PPQ = data.header.ppq;
-                // }
+                var ppq = 192;
+                if (data.header.ppq) {
+                    ppq = data.header.ppq;
+                    Tone.Transport.PPQ = data.header.ppq;
+                }
+                this.ppq = ppq;
+
                 if (data.header.tempos && data.header.tempos.length) {
                     Tone.Transport.bpm.value = data.header.tempos[0].bpm;
-                    this.bpm = 60 / (data.header.tempos[0].bpm || config.DEFAULT_TEMPOS) * ppq;
+                    this.bpm = data.header.tempos[0].bpm;
+                    // this.bpm = 60 / (data.header.tempos[0].bpm || config.DEFAULT_TEMPOS) * ppq;
                 } else {
                     Tone.Transport.bpm.value = config.DEFAULT_TEMPOS;
                 }

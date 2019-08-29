@@ -75,7 +75,7 @@ export var config = {
         },
         body: {
             dh: 8,
-            dw: 0.4,
+            dw: 0.2,
             indexWidth: 0.5,
             lineWidth: 0.5,
             paddingRight: 10,
