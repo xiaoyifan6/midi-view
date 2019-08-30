@@ -32766,7 +32766,7 @@ var Header = (function (_super) {
     __extends(Header, _super);
     function Header() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.dw = config_1.config.ui.hearder.dw;
+        _this.dw = config_1.config.ui.hearder.dw * 129;
         _this.position = 0;
         _this.offsetX = 0;
         _this.bate = config_1.config.ui.hearder.bate;
@@ -32865,7 +32865,7 @@ var Body = (function (_super) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         var _this = _super.call(this, x, y, width, height) || this;
-        _this.dw = config_1.config.ui.body.dw;
+        _this.dw = config_1.config.ui.body.dw * 192;
         _this.dw2 = config_1.config.ui.body.dw;
         _this.paddingRight = config_1.config.ui.body.paddingRight;
         _this.offsetX = 0;
